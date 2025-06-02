@@ -1,0 +1,134 @@
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MULTIBPO - Plataforma BPO Contábil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'multibpo-blue': {
+                100: '#E6F3FF',
+                300: '#66B3FF',
+                600: '#0066CC',
+                900: '#003366'
+              }
+            }
+          }
+        }
+      }
+    </script>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-multibpo-blue-900 to-multibpo-blue-600">
+  <div class="container mx-auto px-4 py-8">
+
+    <!-- Header -->
+    <header class="text-center mb-16">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 mx-auto max-w-4xl">
+        <h1 class="text-5xl font-bold text-multibpo-blue-900 mb-4">
+          🏢 MULTIBPO
+        </h1>
+        <p class="text-xl text-gray-600 mb-6">
+          Plataforma BPO Inteligente para Escritórios de Contabilidade
+        </p>
+        <div class="inline-block bg-multibpo-blue-900 text-white px-4 py-2 rounded-full text-sm font-semibold">
+          🔷 FASE 1 - INFRAESTRUTURA BASE
+        </div>
+      </div>
+    </header>
+
+    <!-- Status Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl mb-2">✅</div>
+        <h3 class="font-semibold text-multibpo-blue-900 mb-2">Docker</h3>
+        <p class="text-gray-600 text-sm">4 Containers Ativos</p>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl mb-2">🗄️</div>
+        <h3 class="font-semibold text-multibpo-blue-900 mb-2">PostgreSQL</h3>
+        <p class="text-gray-600 text-sm">Banco de Dados</p>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl mb-2">🐍</div>
+        <h3 class="font-semibold text-multibpo-blue-900 mb-2">Django</h3>
+        <p class="text-gray-600 text-sm">Backend API</p>
+      </div>
+      
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl mb-2">🚀</div>
+        <h3 class="font-semibold text-multibpo-blue-900 mb-2">Astro</h3>
+        <p class="text-gray-600 text-sm">Frontend</p>
+      </div>
+
+    </div>
+
+    <!-- Services Preview -->
+    <div class="bg-white rounded-2xl shadow-2xl p-8 mb-12">
+      <h2 class="text-3xl font-bold text-multibpo-blue-900 text-center mb-8">
+        🧮 Serviços BPO Contábeis
+      </h2>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="border-2 border-multibpo-blue-100 rounded-lg p-4 hover:border-multibpo-blue-300 transition-colors">
+          <div class="text-2xl mb-2">🧮</div>
+          <h3 class="font-semibold text-multibpo-blue-900 mb-2">Contabilidade Especializada</h3>
+          <p class="text-gray-600 text-sm">Departamento Pessoal, Fiscal e Contábil</p>
+        </div>
+        
+        <div class="border-2 border-multibpo-blue-100 rounded-lg p-4 hover:border-multibpo-blue-300 transition-colors">
+          <div class="text-2xl mb-2">👥</div>
+          <h3 class="font-semibold text-multibpo-blue-900 mb-2">Recursos Humanos</h3>
+          <p class="text-gray-600 text-sm">Gestão completa de pessoal</p>
+        </div>
+        
+        <div class="border-2 border-multibpo-blue-100 rounded-lg p-4 hover:border-multibpo-blue-300 transition-colors">
+          <div class="text-2xl mb-2">📊</div>
+          <h3 class="font-semibold text-multibpo-blue-900 mb-2">Relatórios Fiscais</h3>
+          <p class="text-gray-600 text-sm">Obrigações acessórias automatizadas</p>
+        </div>
+        
+        <div class="border-2 border-multibpo-blue-100 rounded-lg p-4 hover:border-multibpo-blue-300 transition-colors">
+          <div class="text-2xl mb-2">🤖</div>
+          <h3 class="font-semibold text-multibpo-blue-900 mb-2">Automação IA</h3>
+          <p class="text-gray-600 text-sm">Processamento inteligente de documentos</p>
+        </div>
+        
+        <div class="border-2 border-multibpo-blue-100 rounded-lg p-4 hover:border-multibpo-blue-300 transition-colors">
+          <div class="text-2xl mb-2">📱</div>
+          <h3 class="font-semibold text-multibpo-blue-900 mb-2">Portal do Cliente</h3>
+          <p class="text-gray-600 text-sm">Acesso 24/7 aos dados contábeis</p>
+        </div>
+        
+        <div class="border-2 border-multibpo-blue-100 rounded-lg p-4 hover:border-multibpo-blue-300 transition-colors">
+          <div class="text-2xl mb-2">🔒</div>
+          <h3 class="font-semibold text-multibpo-blue-900 mb-2">Compliance</h3>
+          <p class="text-gray-600 text-sm">Auditoria e conformidade regulatória</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <p class="text-multibpo-blue-900 font-semibold mb-2">
+          🚀 MULTIBPO - Fase 1 Implementada com Sucesso!
+        </p>
+        <p class="text-gray-600 text-sm">
+          Acesse: http://192.168.1.4:8082 | Admin: http://192.168.1.4:8082/admin
+        </p>
+      </div>
+    </footer>
+
+  </div>
+</body>
+</html>
+                    

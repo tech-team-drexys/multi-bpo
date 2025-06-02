@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta  # ← NOVO: Import para JWT
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,15 +15,28 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost').split(',')
 
 # Application definition
 INSTALLED_APPS = [
+    # Django Core
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Third Party Apps
+    'rest_framework',
+    'corsheaders',
+    'rest_framework_simplejwt',  # ← NOVO: JWT tokens
+    'django_extensions',         # ← NOVO: Ferramentas dev
+    'phonenumber_field',         # ← NOVO: Validação telefones
+    
+    # Local Apps
+    'apps.authentication',       # ← NOVO: App autenticação
+    'apps.contadores',          # ← NOVO: App contadores
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # ← NOVO: CORS middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -92,3 +106,94 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ========== CONFIGURAÇÕES DA FASE 2.1 ==========
+
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+}
+
+# JWT Configuration
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),      # Token expira em 1 hora
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),      # Refresh em 7 dias
+    'ROTATE_REFRESH_TOKENS': True,                    # Rotaciona refresh tokens
+    'BLACKLIST_AFTER_ROTATION': True,                # Blacklist tokens antigos
+    'UPDATE_LAST_LOGIN': True,                        # Atualiza last_login
+    
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': 'MultiBPO',                             # Identificador do sistema
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+    
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+}
+
+# Phone Number Configuration
+PHONENUMBER_DEFAULT_REGION = 'BR'  # Brasil como região padrão
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()
+]
+
+# CORS Configuration (para desenvolvimento)
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if origin.strip()
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# Database Schema Configuration
+# Configuração para uso dos schemas PostgreSQL definidos na Fase 1
+
+# Apps que usarão schema 'contadores'
+CONTADORES_APPS = ['authentication', 'contadores']
+
+# Apps que usarão schema 'ia_data' (futuro - Fase 5)
+IA_DATA_APPS = []
+
+# Apps que usarão schema 'servicos' (futuro - Fase 3)
+SERVICOS_APPS = []
+
+# Logging Configuration (para desenvolvimento)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'apps.authentication': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'apps.contadores': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

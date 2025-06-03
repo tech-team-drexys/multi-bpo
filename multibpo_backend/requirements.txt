@@ -1,3 +1,4 @@
+# ========== DEPENDÊNCIAS CORE DA FASE 2.1 ==========
 asgiref==3.8.1
 Django==5.2.1
 djangorestframework==3.16.0
@@ -8,7 +9,7 @@ python-decouple==3.8
 sqlparse==0.5.3
 typing_extensions==4.13.2
 
-# Novas dependências Fase 2.1
+# ========== DEPENDÊNCIAS FASE 2.1 (JWT E VALIDAÇÕES) ==========
 django-cors-headers==4.6.0
 djangorestframework-simplejwt==5.3.0
 django-extensions==3.2.3
@@ -16,3 +17,14 @@ Pillow==10.4.0
 django-phonenumber-field==8.0.0
 phonenumbers==8.13.45
 validate-docbr==1.10.0
+
+# ========== NOVAS DEPENDÊNCIAS FASE 2.2.1 (SERIALIZERS) ==========
+drf-yasg==1.21.7                 # Documentação Swagger automática
+factory-boy==3.3.1               # Factories para testes
+coverage==7.6.1                  # Coverage de testes unitários
+freezegun==1.5.1                 # Mock de datas em testes
+django-ratelimit==4.1.0          # Rate limiting para APIs
+
+# ========== DEPENDÊNCIAS DE DESENVOLVIMENTO ==========
+django-debug-toolbar==4.4.6      # Debug toolbar para desenvolvimento
+ipython==8.27.0                  # Shell interativo melhorado

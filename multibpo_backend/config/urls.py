@@ -31,3 +31,14 @@ urlpatterns = [
 # Static files (manter sua configuração existente)
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Debug Toolbar URLs (CORREÇÃO DO ERRO 'djdt' namespace)
+if settings.DEBUG:
+    try:
+        import debug_toolbar
+        urlpatterns = [
+            path('__debug__/', include(debug_toolbar.urls)),
+        ] + urlpatterns
+    except ImportError:
+        # Debug toolbar não instalado - ignora silenciosamente
+        pass

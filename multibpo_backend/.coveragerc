@@ -1,0 +1,28 @@
+[run]
+source = .
+omit = 
+    */venv/*
+    */migrations/*
+    */tests/*
+    manage.py
+    config/wsgi.py
+    config/asgi.py
+    config/settings.py
+    */node_modules/*
+    */__pycache__/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self\.debug
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+
+ignore_errors = True
+
+[html]
+directory = htmlcov
+title = MultiBPO Coverage Report

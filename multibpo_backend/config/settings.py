@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta  # ← NOVO: Import para JWT
 
@@ -29,6 +30,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',  # ← NOVO: JWT tokens
     'django_extensions',         # ← NOVO: Ferramentas dev
     'phonenumber_field',         # ← NOVO: Validação telefones
+
+     # Sub-Fase 2.2.1 - Documentação e Testes
+    'drf_yasg',                 # ← NOVO: Swagger/OpenAPI
+    # 'django_ratelimit',         # ← REMOVIDO TEMPORARIAMENTE: Causando erro
     
     # Local Apps
     'apps.authentication',       # ← NOVO: App autenticação
@@ -77,6 +82,23 @@ DATABASES = {
         'PORT': os.environ.get('DATABASE_PORT', '5432'),
     }
 }
+
+# ========== CONFIGURAÇÃO DE CACHE CORRIGIDA ==========
+# Cache configuration - Usando DummyCache para desenvolvimento
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': '',
+    }
+}
+
+# Para reabilitar django-ratelimit no futuro (quando tivermos Redis):
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#     }
+# }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -197,3 +219,81 @@ LOGGING = {
         },
     },
 }
+
+
+# ========== CONFIGURAÇÕES DA SUB-FASE 2.2.1 ==========
+
+# Swagger/OpenAPI Configuration
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEEP_LINKING': True,
+    'SHOW_EXTENSIONS': True,
+    'DEFAULT_MODEL_RENDERING': 'model',
+}
+
+REDOC_SETTINGS = {
+    'LAZY_RENDERING': False,
+    'HIDE_HOSTNAME': False,
+    'EXPAND_RESPONSES': 'all',
+    'PATH_IN_MIDDLE': True,
+}
+
+
+# Coverage Configuration para Testes
+COVERAGE_MODULE_EXCLUDES = [
+    'tests$', 
+    'settings$', 
+    'urls$', 
+    'locale$',
+    '__pycache__$', 
+    'migrations$', 
+    'venv$'
+]
+
+COVERAGE_REPORT_HTML_OUTPUT_DIR = 'htmlcov'
+
+# Django Extensions Configuration
+DJANGO_EXTENSIONS_RESET_DB = True
+
+# Debug Toolbar Configuration (apenas em DEBUG=True E não em testes)
+if DEBUG and 'test' not in sys.argv:
+    INSTALLED_APPS += [
+        'debug_toolbar',
+    ]
+    
+    MIDDLEWARE = [
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    ] + MIDDLEWARE
+    
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        '192.168.1.4',
+        'localhost',
+    ]
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
+        'SHOW_COLLAPSED': True,
+        'IS_RUNNING_TESTS': False,  # Desabilita durante testes
+    }
+
+# Factory Boy Configuration
+FACTORY_FOR_DJANGO_SILENCE_ROOT_WARNING = True

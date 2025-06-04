@@ -21,7 +21,7 @@ Uso:
 # Serializers de Autenticação - auth.py
 from .auth import (
     ContadorRegistroSerializer,
-    # ContadorLoginSerializer,        # Artefato 3 - Em desenvolvimento
+    ContadorLoginSerializer,        # ← DESCOMENTE ESTA LINHA
     # ContadorValidacaoSerializer,    # Artefato 4 - Em desenvolvimento
 )
 
@@ -31,7 +31,7 @@ __all__ = [
     'ContadorRegistroSerializer',
     
     # Autenticação e login (Artefato 3)
-    # 'ContadorLoginSerializer',
+    'ContadorLoginSerializer',      # ← DESCOMENTE ESTA LINHA
     
     # Validações auxiliares (Artefato 4)  
     # 'ContadorValidacaoSerializer',

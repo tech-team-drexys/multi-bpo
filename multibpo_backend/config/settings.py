@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     # Local Apps
     'apps.authentication',       # ← NOVO: App autenticação
     'apps.contadores',          # ← NOVO: App contadores
+    'apps.receita',
 ]
 
 MIDDLEWARE = [

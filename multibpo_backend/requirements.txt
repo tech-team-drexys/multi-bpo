@@ -28,3 +28,5 @@ django-ratelimit==4.1.0          # Rate limiting para APIs
 # ========== DEPENDÊNCIAS DE DESENVOLVIMENTO ==========
 django-debug-toolbar==4.4.6      # Debug toolbar para desenvolvimento
 ipython==8.27.0                  # Shell interativo melhorado
+
+requests==2.31.0

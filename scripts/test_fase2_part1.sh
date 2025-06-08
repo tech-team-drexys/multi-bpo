@@ -83,9 +83,9 @@ fi
 
 # 1. TESTE DO SISTEMA BASE
 echo -e "${YELLOW}1️⃣ TESTANDO SISTEMA BASE${NC}"
-run_test "Health check MultiBPO" 'curl -s http://192.168.1.4:8082/health/ | grep -q "MultiBPO OK"'
-run_test "Nginx proxy funcionando" 'curl -s -I http://192.168.1.4:8082/ | head -n1 | grep -q "200\|302"'
-run_test "Backend acessível via proxy" 'curl -s -I http://192.168.1.4:8082/admin/ | grep -q "302"'
+run_test "Health check MultiBPO" 'curl -s http://192.168.0.10:8082/health/ | grep -q "MultiBPO OK"'
+run_test "Nginx proxy funcionando" 'curl -s -I http://192.168.0.10:8082/ | head -n1 | grep -q "200\|302"'
+run_test "Backend acessível via proxy" 'curl -s -I http://192.168.0.10:8082/admin/ | grep -q "302"'
 
 # 2. TESTE DOS CONTAINERS DOCKER
 echo -e "${YELLOW}2️⃣ TESTANDO CONTAINERS DOCKER${NC}"
@@ -97,9 +97,9 @@ run_test "Nginx container ativo" 'docker-compose ps | grep -q "multibpo_nginx.*U
 
 # 3. TESTE DOS APPS DJANGO OBRIGATÓRIOS
 echo -e "${YELLOW}3️⃣ TESTANDO APPS DJANGO OBRIGATÓRIOS${NC}"
-run_test "App authentication criado" 'curl -s http://192.168.1.4:8082/api/v1/auth/test/ | grep -q "authentication"'
-run_test "App contadores criado" 'curl -s http://192.168.1.4:8082/api/v1/contadores/test/ | grep -q "contadores"'
-run_test "Django Admin acessível" 'curl -s -I http://192.168.1.4:8082/admin/ | grep -q "302"'
+run_test "App authentication criado" 'curl -s http://192.168.0.10:8082/api/v1/auth/test/ | grep -q "authentication"'
+run_test "App contadores criado" 'curl -s http://192.168.0.10:8082/api/v1/contadores/test/ | grep -q "contadores"'
+run_test "Django Admin acessível" 'curl -s -I http://192.168.0.10:8082/admin/ | grep -q "302"'
 
 # Teste de configuração de apps no Django
 APP_CONFIG_TEST=$(docker-compose exec -T backend python manage.py shell -c "
@@ -666,8 +666,8 @@ run_test "Variáveis ambiente configuradas" 'echo "$PROD_CONFIG_TEST" | grep -q 
 echo -e "${YELLOW}1️⃣3️⃣ TESTANDO PREPARAÇÃO PARA MINI-FASE 2.2${NC}"
 
 # Testar se URLs estão configuradas para próxima fase
-run_test "JWT Token endpoints disponíveis" 'curl -s -I http://192.168.1.4:8082/api/v1/token/ | grep -q "405\|200\|400"'  # Method not allowed é esperado
-run_test "Auth endpoints preparados" 'curl -s http://192.168.1.4:8082/api/v1/auth/test/ | grep -q "jwt_ready.*true"'
+run_test "JWT Token endpoints disponíveis" 'curl -s -I http://192.168.0.10:8082/api/v1/token/ | grep -q "405\|200\|400"'  # Method not allowed é esperado
+run_test "Auth endpoints preparados" 'curl -s http://192.168.0.10:8082/api/v1/auth/test/ | grep -q "jwt_ready.*true"'
 
 # Verificar estrutura de URLs
 URL_STRUCTURE_TEST=$(docker-compose exec -T backend python manage.py shell -c "

@@ -13,7 +13,7 @@ RUN npm install
 
 # Copiar código fonte
 COPY src/ ./src/
-COPY public/ ./public/
+# COPY public/ ./public/
 
 # Expor porta
 EXPOSE 3000

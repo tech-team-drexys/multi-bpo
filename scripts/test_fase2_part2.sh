@@ -55,7 +55,7 @@ echo ""
 
 # 2. Health check
 log_info "2. Testando health check..."
-HEALTH_RESPONSE=$(curl -s http://192.168.1.4:8082/health/ 2>/dev/null)
+HEALTH_RESPONSE=$(curl -s http://192.168.0.10:8082/health/ 2>/dev/null)
 if [[ "$HEALTH_RESPONSE" == "MultiBPO OK" ]]; then
     log_success "Health check: $HEALTH_RESPONSE"
 else
@@ -68,7 +68,7 @@ echo ""
 log_info "3. Testando APIs Mini-Fase 2.1..."
 
 # Auth API
-AUTH_RESPONSE=$(curl -s http://192.168.1.4:8082/api/v1/auth/test/ 2>/dev/null)
+AUTH_RESPONSE=$(curl -s http://192.168.0.10:8082/api/v1/auth/test/ 2>/dev/null)
 if echo "$AUTH_RESPONSE" | grep -q '"status":"OK"'; then
     log_success "API Authentication: OK"
 else
@@ -78,7 +78,7 @@ else
 fi
 
 # Contadores API
-CONTADORES_RESPONSE=$(curl -s http://192.168.1.4:8082/api/v1/contadores/test/ 2>/dev/null)
+CONTADORES_RESPONSE=$(curl -s http://192.168.0.10:8082/api/v1/contadores/test/ 2>/dev/null)
 if echo "$CONTADORES_RESPONSE" | grep -q '"status":"OK"'; then
     log_success "API Contadores: OK"
 else
@@ -206,7 +206,7 @@ echo "   3. Validações brasileiras (CPF/CNPJ/CRC)"
 echo "   4. Documentação automática com Swagger"
 echo ""
 log_info "🔗 URLs de teste:"
-echo "   - Health: http://192.168.1.4:8082/health/"
-echo "   - Auth API: http://192.168.1.4:8082/api/v1/auth/test/"
-echo "   - Contadores API: http://192.168.1.4:8082/api/v1/contadores/test/"
-echo "   - Admin: http://192.168.1.4:8082/admin/"
+echo "   - Health: http://192.168.0.10:8082/health/"
+echo "   - Auth API: http://192.168.0.10:8082/api/v1/auth/test/"
+echo "   - Contadores API: http://192.168.0.10:8082/api/v1/contadores/test/"
+echo "   - Admin: http://192.168.0.10:8082/admin/"

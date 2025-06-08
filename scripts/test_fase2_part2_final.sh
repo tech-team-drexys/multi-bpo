@@ -54,7 +54,7 @@ cd ~/multibpo_project
 log_info "1. Verificando endpoints do sistema..."
 
 # Health check
-HEALTH_CHECK=$(curl -s http://192.168.1.4:8082/health/ 2>/dev/null || echo "ERRO")
+HEALTH_CHECK=$(curl -s http://192.168.0.10:8082/health/ 2>/dev/null || echo "ERRO")
 if echo "$HEALTH_CHECK" | grep -q "MultiBPO OK"; then
     log_success "Health check: MultiBPO funcionando"
 else
@@ -62,7 +62,7 @@ else
 fi
 
 # API Contadores
-CONTADORES_API=$(curl -s http://192.168.1.4:8082/api/v1/contadores/test/ 2>/dev/null || echo "ERRO")
+CONTADORES_API=$(curl -s http://192.168.0.10:8082/api/v1/contadores/test/ 2>/dev/null || echo "ERRO")
 if echo "$CONTADORES_API" | grep -q "OK"; then
     log_success "API Contadores: Funcionando"
 else
@@ -70,7 +70,7 @@ else
 fi
 
 # API Auth
-AUTH_API=$(curl -s http://192.168.1.4:8082/api/v1/auth/test/ 2>/dev/null || echo "ERRO")
+AUTH_API=$(curl -s http://192.168.0.10:8082/api/v1/auth/test/ 2>/dev/null || echo "ERRO")
 if echo "$AUTH_API" | grep -q "OK"; then
     log_success "API Authentication: Funcionando"
 else

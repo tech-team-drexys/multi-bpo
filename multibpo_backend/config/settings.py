@@ -284,11 +284,8 @@ if DEBUG and 'test' not in sys.argv:
         'debug_toolbar.middleware.DebugToolbarMiddleware',
     ] + MIDDLEWARE
     
-    INTERNAL_IPS = [
-        '127.0.0.1',
-        '192.168.1.4',
-        'localhost',
-    ]
+    INTERNAL_IPS = [ip.strip() for ip in os.environ.get('DJANGO_INTERNAL_IPS', '127.0.0.1').split(',')]
+
 
     DEBUG_TOOLBAR_CONFIG = {
         'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,

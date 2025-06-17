@@ -1,24 +1,17 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiar arquivos de configuração primeiro (cache optimization)
-COPY package.json package-lock.json* ./
-COPY vite.config.ts ./
-COPY tailwind.config.js ./
-COPY postcss.config.js ./
-COPY tsconfig.json ./
-COPY tsconfig.node.json ./
-COPY index.html ./
+# Copy package files
+COPY package*.json ./
 
-# Instalar dependências
+# Install dependencies
 RUN npm install
 
-# Copiar código fonte
-COPY src/ ./src/
+# Copy source code
+COPY . .
 
-# Expor porta
 EXPOSE 3000
 
-# Comando para desenvolvimento com hot reload
+# Use Vite dev server (que já funciona perfeitamente)
 CMD ["npm", "run", "dev"]

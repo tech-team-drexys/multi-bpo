@@ -295,3 +295,91 @@ if DEBUG and 'test' not in sys.argv:
 
 # Factory Boy Configuration
 FACTORY_FOR_DJANGO_SILENCE_ROOT_WARNING = True
+
+# ========== CONFIGURAÇÕES DE PRODUÇÃO WEB ==========
+
+# SSL/HTTPS Configuration (CloudFlare como proxy)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False  # Só redireciona em produção
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Session Security
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+# Security Headers
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Staticfiles configuration (sempre necessário)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+] if os.path.exists(os.path.join(BASE_DIR, 'static')) else []
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+
+# Configurações específicas para produção
+if not DEBUG:
+    # Configurações adicionais para produção podem ir aqui
+    pass
+
+# Logging para produção
+if not DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': '/app/logs/django.log',
+            },
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['file', 'console'],
+                'level': 'INFO',
+                'propagate': True,
+            },
+            'apps': {
+                'handlers': ['file', 'console'],
+                'level': 'INFO',
+                'propagate': True,
+            },
+        },
+    }
+
+# CloudFlare IP Trust
+CLOUDFLARE_IPS = [
+    '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22', '104.16.0.0/13',
+    '104.24.0.0/14', '108.162.192.0/18', '131.0.72.0/22', '141.101.64.0/18',
+    '162.158.0.0/15', '172.64.0.0/13', '173.245.48.0/20', '188.114.96.0/20',
+    '190.93.240.0/20', '197.234.240.0/22', '198.41.128.0/17',
+]
+
+# INTERNAL_IPS - DEFINIR PRIMEIRO, DEPOIS CONCATENAR
+INTERNAL_IPS = [ip.strip() for ip in os.environ.get('DJANGO_INTERNAL_IPS', '127.0.0.1').split(',')]
+
+# Trust CloudFlare IPs for real IP detection (TEMPORARIAMENTE DESABILITADO)
+# if not DEBUG:
+#     INTERNAL_IPS.extend(CLOUDFLARE_IPS)

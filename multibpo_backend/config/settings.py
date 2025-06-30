@@ -27,18 +27,15 @@ INSTALLED_APPS = [
     # Third Party Apps
     'rest_framework',
     'corsheaders',
-    'rest_framework_simplejwt',  # ← NOVO: JWT tokens
-    'django_extensions',         # ← NOVO: Ferramentas dev
-    'phonenumber_field',         # ← NOVO: Validação telefones
-
-     # Sub-Fase 2.2.1 - Documentação e Testes
-    'drf_yasg',                 # ← NOVO: Swagger/OpenAPI
-    # 'django_ratelimit',         # ← REMOVIDO TEMPORARIAMENTE: Causando erro
+    'rest_framework_simplejwt',
+    'django_extensions',
+    'phonenumber_field',
     
     # Local Apps
-    'apps.authentication',       # ← NOVO: App autenticação
-    'apps.contadores',          # ← NOVO: App contadores
+    'apps.authentication',
+    'apps.contadores',
     'apps.receita',
+    'apps.whatsapp_users', 
 ]
 
 MIDDLEWARE = [

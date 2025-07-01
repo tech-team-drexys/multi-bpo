@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.utils import timezone
 import re
+import secrets
 
 
 class WhatsAppUser(models.Model):
@@ -282,3 +283,150 @@ class ConfiguracaoSistema(models.Model):
                     'ativo': True
                 }
             )
+
+class EmailVerificationToken(models.Model):
+    """
+    Token para verificação de email de usuários vindos do WhatsApp
+    Integra com sistema de limites existente do WhatsAppUser
+    """
+    
+    user = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE,
+        related_name='email_verification_token',
+        verbose_name='Usuário'
+    )
+    token = models.CharField(
+        max_length=64, 
+        unique=True,
+        verbose_name='Token de Verificação'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Criado em'
+    )
+    verified_at = models.DateTimeField(
+        null=True, 
+        blank=True,
+        verbose_name='Verificado em'
+    )
+    is_verified = models.BooleanField(
+        default=False,
+        verbose_name='Está Verificado'
+    )
+    
+    # Campos de auditoria
+    ip_address = models.GenericIPAddressField(
+        null=True, 
+        blank=True,
+        verbose_name='IP do Cadastro'
+    )
+    user_agent = models.TextField(
+        blank=True,
+        verbose_name='User Agent'
+    )
+    
+    class Meta:
+        db_table = 'whatsapp_email_verification_tokens'
+        verbose_name = 'Token de Verificação de Email'
+        verbose_name_plural = 'Tokens de Verificação de Email'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        status = '✅ Verificado' if self.is_verified else '⏳ Pendente'
+        return f"Token {self.user.email} - {status}"
+    
+    def is_expired(self):
+        """
+        Verifica se token expirou (1 hora conforme settings)
+        """
+        from django.conf import settings
+        expiry_time = self.created_at + settings.EMAIL_VERIFICATION_TOKEN_LIFETIME
+        return timezone.now() > expiry_time
+    
+    def verify(self):
+        """
+        Marca token como verificado e integra com WhatsAppUser existente
+        """
+        if self.is_expired():
+            return False, "Token expirado"
+        
+        if self.is_verified:
+            return True, "Já verificado anteriormente"
+        
+        try:
+            # Marcar token como verificado
+            self.is_verified = True
+            self.verified_at = timezone.now()
+            self.save()
+            
+            # Ativar usuário Django
+            self.user.is_active = True
+            self.user.save()
+            
+            # Integrar com WhatsAppUser existente usando método verificar_email()
+            try:
+                whatsapp_user = WhatsAppUser.objects.get(email=self.user.email)
+                # Usar método existente do WhatsAppUser
+                whatsapp_user.verificar_email()  # Já faz upgrade para 'basico'
+                
+            except WhatsAppUser.DoesNotExist:
+                # Se não existe WhatsAppUser, criar um básico
+                WhatsAppUser.objects.create(
+                    user=self.user,
+                    email=self.user.email,
+                    nome=self.user.get_full_name() or self.user.username,
+                    plano_atual='basico',  # Direto para básico após verificação
+                    limite_perguntas=10,
+                    email_verificado=True,
+                    email_verificado_em=timezone.now(),
+                    ativo=True
+                )
+            
+            return True, "Email verificado com sucesso"
+            
+        except Exception as e:
+            return False, f"Erro ao verificar: {str(e)}"
+    
+    @classmethod
+    def generate_token(cls, user, ip_address=None, user_agent=None):
+        """
+        Gera token único e seguro para usuário
+        Remove tokens anteriores para evitar duplicatas
+        """
+        # Gerar token seguro de 48 caracteres
+        token = secrets.token_urlsafe(48)
+        
+        # Remover token anterior se existir (um token por usuário)
+        cls.objects.filter(user=user).delete()
+        
+        # Criar novo token
+        return cls.objects.create(
+            user=user,
+            token=token,
+            ip_address=ip_address,
+            user_agent=user_agent[:500] if user_agent else ''  # Limitar tamanho
+        )
+    
+    @classmethod
+    def cleanup_expired_tokens(cls):
+        """
+        Remove tokens expirados (execução via cron/celery)
+        """
+        expired_tokens = []
+        for token in cls.objects.filter(is_verified=False):
+            if token.is_expired():
+                expired_tokens.append(token.id)
+        
+        if expired_tokens:
+            deleted_count = cls.objects.filter(id__in=expired_tokens).delete()[0]
+            return deleted_count
+        
+        return 0
+    
+    def get_verification_url(self):
+        """
+        Retorna URL completa para verificação
+        """
+        from django.conf import settings
+        return f"{settings.EMAIL_VERIFICATION_URL}/{self.token}"

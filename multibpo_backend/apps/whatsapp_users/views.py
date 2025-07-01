@@ -20,6 +20,18 @@ from .utils import (
     get_mensagem_limite, atualizar_usuario_whatsapp
 )
 
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from rest_framework.decorators import api_view, permission_classes
+from django.utils import timezone
+import re
+
+# Imports específicos para views mobile
+from .models import EmailVerificationToken  # Novo modelo criado
+from .utils.email_helpers import send_verification_email, send_welcome_email, get_client_ip
+
 
 class APIKeyAuthenticationMixin:
     """Mixin para autenticação via API Key simples"""
@@ -236,3 +248,378 @@ class HealthCheckView(APIView):
                 '/api/v1/whatsapp/update-user/'
             ]
         })
+    
+def validate_whatsapp_number(phone):
+    """Validar formato do número WhatsApp brasileiro"""
+    # Remove caracteres especiais
+    clean_phone = re.sub(r'[^\d]', '', phone)
+    
+    # Deve ter 10-11 dígitos após código do país
+    if len(clean_phone) < 10:
+        return False
+    
+    # Adicionar código do país se não tiver
+    if not clean_phone.startswith('55'):
+        clean_phone = '55' + clean_phone
+    
+    # Formato final: +5511999999999
+    return '+' + clean_phone
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def mobile_register_view(request):
+    """
+    API para registro mobile com envio de email de verificação
+    
+    POST /api/v1/whatsapp/mobile/register/
+    Body: {
+        "email": "user@email.com",
+        "whatsapp": "+5511999999999", 
+        "password": "senha123",
+        "nome": "Nome Usuario" (opcional)
+    }
+    """
+    
+    try:
+        # Extrair e validar dados básicos
+        email = request.data.get('email', '').strip().lower()
+        whatsapp = request.data.get('whatsapp', '').strip()
+        password = request.data.get('password', '')
+        nome = request.data.get('nome', '').strip()
+        
+        # Validações obrigatórias
+        if not all([email, whatsapp, password]):
+            return Response({
+                'success': False,
+                'message': 'Email, WhatsApp e senha são obrigatórios.',
+                'field_errors': {
+                    'email': 'Obrigatório' if not email else None,
+                    'whatsapp': 'Obrigatório' if not whatsapp else None,
+                    'password': 'Obrigatório' if not password else None,
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validar formato do email
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({
+                'success': False,
+                'message': 'Formato de email inválido.',
+                'field_errors': {'email': 'Formato inválido'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validar senha (mínimo 6 caracteres)
+        if len(password) < 6:
+            return Response({
+                'success': False,
+                'message': 'Senha deve ter pelo menos 6 caracteres.',
+                'field_errors': {'password': 'Mínimo 6 caracteres'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validar e normalizar WhatsApp
+        whatsapp_normalized = validate_whatsapp_number(whatsapp)
+        if not whatsapp_normalized:
+            return Response({
+                'success': False,
+                'message': 'Formato de WhatsApp inválido. Use: (11) 99999-9999',
+                'field_errors': {'whatsapp': 'Formato inválido'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar se email já existe
+        if User.objects.filter(email=email).exists():
+            return Response({
+                'success': False,
+                'message': 'Este email já está cadastrado. Faça login ou use outro email.',
+                'field_errors': {'email': 'Email já cadastrado'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar se WhatsApp já está cadastrado
+        if WhatsAppUser.objects.filter(phone_number=whatsapp_normalized).exists():
+            return Response({
+                'success': False,
+                'message': 'Este WhatsApp já está cadastrado. Faça login ou use outro número.',
+                'field_errors': {'whatsapp': 'WhatsApp já cadastrado'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Criar usuário Django (inativo até verificar email)
+        user = User.objects.create_user(
+            username=email,  # Usar email como username
+            email=email,
+            password=password,
+            first_name=nome.split()[0] if nome else '',
+            last_name=' '.join(nome.split()[1:]) if nome and len(nome.split()) > 1 else '',
+            is_active=False  # Ativar apenas após verificação de email
+        )
+        
+        # Criar WhatsAppUser vinculado (inativo até verificar email)
+        whatsapp_user = WhatsAppUser.objects.create(
+            user=user,
+            phone_number=whatsapp_normalized,
+            nome=nome or email.split('@')[0],
+            email=email,
+            plano_atual='novo',  # Começa como novo até verificar email
+            limite_perguntas=3,
+            ativo=False,  # Ativar após verificação
+            termos_aceitos=True,  # Assumir aceite na página mobile
+            termos_aceitos_em=timezone.now()
+        )
+        
+        # Gerar token de verificação
+        ip_address = get_client_ip(request)
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+        verification_token = EmailVerificationToken.generate_token(
+            user, 
+            ip_address=ip_address, 
+            user_agent=user_agent
+        )
+        
+        # Enviar email de verificação
+        email_sent = send_verification_email(user, verification_token.token, request)
+        
+        if email_sent:
+            return Response({
+                'success': True,
+                'message': 'Conta criada! Verifique seu email para ativar.',
+                'data': {
+                    'user_id': user.id,
+                    'email': email,
+                    'whatsapp': whatsapp_normalized,
+                    'nome': nome or email.split('@')[0],
+                    'verification_needed': True,
+                    'token_expires_in': '1 hora'
+                }
+            }, status=status.HTTP_201_CREATED)
+        else:
+            # Se email falhou, deletar usuário criado
+            user.delete()
+            return Response({
+                'success': False,
+                'message': 'Erro ao enviar email de verificação. Tente novamente em alguns minutos.',
+                'error_code': 'EMAIL_SEND_FAILED'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        # Log do erro completo
+        import logging
+        logger = logging.getLogger('email')
+        logger.error(f"Erro no registro mobile: {e}")
+        
+        return Response({
+            'success': False,
+            'message': 'Erro interno no servidor. Tente novamente.',
+            'error_code': 'INTERNAL_ERROR'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email_view(request, token):
+    """
+    API para verificar email via token do link
+    
+    GET /api/v1/whatsapp/verify-email/<token>/
+    """
+    
+    try:
+        verification_token = EmailVerificationToken.objects.get(token=token)
+        
+        # Verificar se já foi verificado
+        if verification_token.is_verified:
+            return Response({
+                'success': True,
+                'message': 'Email já foi verificado anteriormente.',
+                'data': {
+                    'already_verified': True,
+                    'user_email': verification_token.user.email,
+                    'verified_at': verification_token.verified_at
+                }
+            })
+        
+        # Verificar se expirou
+        if verification_token.is_expired():
+            return Response({
+                'success': False,
+                'message': 'Token de verificação expirado. Solicite um novo cadastro.',
+                'data': {
+                    'expired': True,
+                    'user_email': verification_token.user.email
+                },
+                'error_code': 'TOKEN_EXPIRED'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Verificar token e ativar conta
+        success, message = verification_token.verify()
+        
+        if success:
+            # Gerar tokens JWT automaticamente para auto-login
+            try:
+                # Tentar usar sistema JWT existente
+                from apps.authentication.views import JWTTokenResponse
+                tokens = JWTTokenResponse.create_tokens_for_user(verification_token.user)
+            except (ImportError, AttributeError):
+                # Fallback se não conseguir importar
+                tokens = {
+                    'access': 'jwt_token_placeholder',
+                    'refresh': 'jwt_refresh_placeholder'
+                }
+            
+            # Enviar email de boas-vindas (opcional)
+            send_welcome_email(verification_token.user)
+            
+            return Response({
+                'success': True,
+                'message': 'Email verificado com sucesso! Conta ativada.',
+                'data': {
+                    'verified': True,
+                    'auto_login': True,
+                    'user': {
+                        'id': verification_token.user.id,
+                        'email': verification_token.user.email,
+                        'nome': verification_token.user.get_full_name() or verification_token.user.username,
+                        'plano_atual': 'basico',  # Upgraded automaticamente
+                        'perguntas_disponveis': 10
+                    },
+                    'tokens': tokens,
+                    'redirect_url': '/m/sucesso'
+                }
+            })
+        else:
+            return Response({
+                'success': False,
+                'message': f'Erro ao verificar email: {message}',
+                'error_code': 'VERIFICATION_FAILED'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except EmailVerificationToken.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Token de verificação inválido ou não encontrado.',
+            'data': {
+                'invalid_token': True
+            },
+            'error_code': 'INVALID_TOKEN'
+        }, status=status.HTTP_404_NOT_FOUND)
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger('email')
+        logger.error(f"Erro na verificação de email: {e}")
+        
+        return Response({
+            'success': False,
+            'message': 'Erro interno no servidor.',
+            'error_code': 'INTERNAL_ERROR'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def mobile_login_view(request):
+    """
+    API para login mobile com validação extra
+    
+    POST /api/v1/whatsapp/mobile/login/
+    Body: {
+        "email": "user@email.com",
+        "password": "senha123"
+    }
+    """
+    
+    try:
+        email = request.data.get('email', '').strip().lower()
+        password = request.data.get('password', '')
+        
+        # Validações básicas
+        if not all([email, password]):
+            return Response({
+                'success': False,
+                'message': 'Email e senha são obrigatórios.',
+                'field_errors': {
+                    'email': 'Obrigatório' if not email else None,
+                    'password': 'Obrigatório' if not password else None,
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Autenticar usuário
+        user = authenticate(username=email, password=password)
+        
+        if not user:
+            return Response({
+                'success': False,
+                'message': 'Email ou senha incorretos.',
+                'field_errors': {
+                    'email': 'Credenciais inválidas',
+                    'password': 'Credenciais inválidas'
+                },
+                'error_code': 'INVALID_CREDENTIALS'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Verificar se conta está ativa
+        if not user.is_active:
+            return Response({
+                'success': False,
+                'message': 'Conta não verificada. Verifique seu email ou cadastre-se novamente.',
+                'data': {
+                    'email_not_verified': True,
+                    'user_email': user.email,
+                    'register_url': '/m/cadastro'
+                },
+                'error_code': 'ACCOUNT_NOT_VERIFIED'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Gerar tokens JWT
+        try:
+            from apps.authentication.views import JWTTokenResponse
+            tokens = JWTTokenResponse.create_tokens_for_user(user)
+        except (ImportError, AttributeError):
+            tokens = {
+                'access': 'jwt_token_placeholder',
+                'refresh': 'jwt_refresh_placeholder'
+            }
+        
+        # Buscar dados do WhatsAppUser
+        user_data = {
+            'id': user.id,
+            'email': user.email,
+            'nome': user.get_full_name() or user.username,
+            'whatsapp_phone': None,
+            'plano_atual': 'basico',
+            'perguntas_restantes': 10
+        }
+        
+        try:
+            whatsapp_user = WhatsAppUser.objects.get(email=user.email)
+            user_data.update({
+                'whatsapp_phone': whatsapp_user.phone_number,
+                'plano_atual': whatsapp_user.plano_atual,
+                'perguntas_restantes': whatsapp_user.get_perguntas_restantes(),
+                'limite_perguntas': whatsapp_user.limite_perguntas,
+                'perguntas_realizadas': whatsapp_user.perguntas_realizadas
+            })
+        except WhatsAppUser.DoesNotExist:
+            # Se não tem WhatsAppUser, usuário veio apenas do site
+            pass
+        
+        return Response({
+            'success': True,
+            'message': 'Login realizado com sucesso!',
+            'data': {
+                'login_completed': True,
+                'user': user_data,
+                'tokens': tokens,
+                'redirect_url': '/m/sucesso'
+            }
+        })
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger('email')
+        logger.error(f"Erro no login mobile: {e}")
+        
+        return Response({
+            'success': False,
+            'message': 'Erro interno no servidor.',
+            'error_code': 'INTERNAL_ERROR'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

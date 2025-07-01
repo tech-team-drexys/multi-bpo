@@ -1,0 +1,63 @@
+✅ MULTIBPO - Confirme seu email
+========================================
+
+Olá {{ user.get_full_name|default:user.username }}! 👋
+
+Bem-vindo à MULTI BPO - Soluções Contábeis Inteligentes!
+
+Para ativar sua conta e começar a usar nossa IA especializada em contabilidade, confirme seu email clicando no link abaixo:
+
+🔗 LINK DE VERIFICAÇÃO:
+{{ verification_url }}
+
+⏰ IMPORTANTE: Este link expira em 1 hora por segurança.
+
+🚀 O QUE VOCÊ GANHA APÓS A VERIFICAÇÃO:
+========================================
+
+📱 10 perguntas para nossa IA especializada
+💬 Acesso integrado via WhatsApp  
+📊 Respostas especializadas em contabilidade
+🎯 Consultoria automatizada 24/7
+📋 Histórico de suas consultas
+
+🔒 INFORMAÇÕES DE SEGURANÇA:
+========================================
+
+IP do cadastro: {{ ip_address|default:"Não identificado" }}
+Data/Hora: {{ user.date_joined|date:"d/m/Y H:i"|default:"Agora" }}
+
+Se você não solicitou este cadastro, ignore este email.
+
+📞 COMO USAR APÓS A VERIFICAÇÃO:
+========================================
+
+1. Clique no link de verificação acima
+2. Sua conta será ativada automaticamente  
+3. Volte ao WhatsApp para continuar conversando
+4. Ou acesse nosso site: {{ site_url }}
+
+💬 WHATSAPP INTEGRADO:
+{{ whatsapp_url }}
+
+🌐 SITE MULTIBPO:
+{{ site_url }}
+
+📧 SUPORTE:
+{{ support_email }}
+
+========================================
+MULTI BPO - Soluções Contábeis Inteligentes
+{{ site_url }}
+
+© {{ "now"|date:"Y" }} {{ company_name }}
+Todos os direitos reservados.
+
+Este é um email automático, não responda a esta mensagem.
+
+Dúvidas? Entre em contato:
+📧 {{ support_email }}
+📱 {{ whatsapp_url }}
+🌐 {{ site_url }}
+
+========================================

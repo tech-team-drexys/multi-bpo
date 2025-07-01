@@ -380,3 +380,65 @@ INTERNAL_IPS = [ip.strip() for ip in os.environ.get('DJANGO_INTERNAL_IPS', '127.
 # Trust CloudFlare IPs for real IP detection (TEMPORARIAMENTE DESABILITADO)
 # if not DEBUG:
 #     INTERNAL_IPS.extend(CLOUDFLARE_IPS)
+
+# ========== CONFIGURAÇÃO EMAIL GMAIL SMTP (FASE 1) ==========
+# Adicionado em 01/07/2025 para sistema mobile de verificação de email
+# Configuração temporária com Gmail, depois migrar para Mailgun
+
+from datetime import timedelta
+
+# Backend de email Gmail SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Credenciais Gmail (configurar via variáveis de ambiente)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'seu-email@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'sua-senha-de-app-google')
+
+# Email remetente padrão
+DEFAULT_FROM_EMAIL = f'MultiBPO <{EMAIL_HOST_USER}>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# URLs do frontend para verificação de email
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://multibpo.com.br')
+EMAIL_VERIFICATION_URL = f'{FRONTEND_URL}/m/verificar-email'
+
+# Configurações de token de verificação
+EMAIL_VERIFICATION_TOKEN_LIFETIME = timedelta(hours=1)  # Token expira em 1 hora
+
+# Configurações de segurança para email
+EMAIL_TIMEOUT = 30  # Timeout de conexão SMTP em segundos
+EMAIL_SSL_KEYFILE = None
+EMAIL_SSL_CERTFILE = None
+
+# Debug de email (apenas em desenvolvimento)
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Para testes locais
+    # Para usar Gmail em desenvolvimento, comentar a linha acima
+
+# ========== LOGGING PARA EMAIL ==========
+# Adicionar logging específico para sistema de email
+LOGGING['loggers']['email'] = {
+    'handlers': ['file', 'console'],
+    'level': 'INFO',
+    'propagate': False,
+}
+
+# ========== CONFIGURAÇÕES MOBILE ESPECÍFICAS ==========
+# URLs específicas para sistema mobile
+MOBILE_CADASTRO_URL = f'{FRONTEND_URL}/m/cadastro'
+MOBILE_LOGIN_URL = f'{FRONTEND_URL}/m/login'
+MOBILE_POLITICA_URL = f'{FRONTEND_URL}/m/politica'
+MOBILE_SUCESSO_URL = f'{FRONTEND_URL}/m/sucesso'
+
+# Configurações de segurança para APIs mobile
+MOBILE_API_RATE_LIMIT = '10/min'  # 10 tentativas por minuto por IP
+MOBILE_TOKEN_MAX_AGE = 3600  # 1 hora em segundos
+
+# ========== CONFIGURAÇÕES WHATSAPP INTEGRATION ==========
+# URLs para integração com WhatsApp (atualizadas para mobile)
+WHATSAPP_CADASTRO_URL = MOBILE_CADASTRO_URL
+WHATSAPP_LOGIN_URL = MOBILE_LOGIN_URL
+WHATSAPP_POLITICA_URL = MOBILE_POLITICA_URL

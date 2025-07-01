@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirme seu email - MultiBPO</title>
+    <style>
+        /* Reset CSS para email */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f8f9fa;
+        }
+        
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .welcome-message {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .verification-box {
+            background-color: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .verification-message {
+            font-size: 16px;
+            color: #495057;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .security-info {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        
+        .security-info h3 {
+            color: #856404;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .security-info p {
+            color: #856404;
+            font-size: 13px;
+            margin: 0;
+        }
+        
+        .features {
+            margin: 30px 0;
+        }
+        
+        .features h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .feature-item {
+            background-color: #e8f4fd;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #1e3a8a;
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        .footer h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .footer p {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .social-links {
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        /* Mobile Responsive */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 4px;
+            }
+            
+            .content {
+                padding: 25px 20px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .verification-box {
+                padding: 20px 15px;
+            }
+            
+            .cta-button {
+                padding: 12px 25px;
+                font-size: 14px;
+            }
+            
+            .feature-list {
+                flex-direction: column;
+            }
+            
+            .feature-item {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>✅ MultiBPO</h1>
+            <p>Soluções Contábeis Inteligentes</p>
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <div class="welcome-message">
+                Olá <strong>{{ user.get_full_name|default:user.username }}</strong>! 👋
+            </div>
+            
+            <p style="font-size: 16px; color: #495057; text-align: center; margin-bottom: 25px;">
+                Bem-vindo à <strong>MultiBPO</strong>! Para ativar sua conta e começar a usar nossa IA especializada em contabilidade, confirme seu email clicando no botão abaixo:
+            </p>
+            
+            <div class="verification-box">
+                <div class="verification-message">
+                    <strong>🔐 Confirme seu email para ativar sua conta</strong><br>
+                    Este link expira em <strong>1 hora</strong> por segurança.
+                </div>
+                
+                <a href="{{ verification_url }}" class="cta-button">
+                    ✅ Confirmar Email
+                </a>
+            </div>
+            
+            <div class="features">
+                <h3>🚀 O que você ganha após a verificação:</h3>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        📱 <strong>10 perguntas</strong><br>para nossa IA
+                    </div>
+                    <div class="feature-item">
+                        💬 <strong>Acesso WhatsApp</strong><br>integrado
+                    </div>
+                    <div class="feature-item">
+                        📊 <strong>Respostas especializadas</strong><br>em contabilidade
+                    </div>
+                </div>
+            </div>
+            
+            <div class="security-info">
+                <h3>🔒 Informações de Segurança</h3>
+                <p>
+                    <strong>IP do cadastro:</strong> {{ ip_address|default:"Não identificado" }}<br>
+                    <strong>Data/Hora:</strong> {{ verification_token.created_at|date:"d/m/Y H:i" }}<br>
+                    Se você não solicitou este cadastro, ignore este email.
+                </p>
+            </div>
+            
+            <p style="text-align: center; color: #6c757d; font-size: 14px; margin-top: 30px;">
+                Não consegue clicar no botão? Copie e cole este link no seu navegador:<br>
+                <a href="{{ verification_url }}" style="color: #667eea; word-break: break-all;">{{ verification_url }}</a>
+            </p>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <h3>MULTI BPO</h3>
+            <p>Soluções Contábeis Inteligentes</p>
+            <p>
+                <a href="{{ site_url }}">{{ site_url }}</a> |
+                <a href="{{ whatsapp_url }}">WhatsApp</a> |
+                <a href="mailto:{{ support_email }}">{{ support_email }}</a>
+            </p>
+            
+            <div class="social-links">
+                <a href="{{ whatsapp_url }}">📱 WhatsApp</a>
+                <a href="{{ site_url }}">🌐 Site</a>
+                <a href="mailto:{{ support_email }}">📧 Suporte</a>
+            </div>
+            
+            <p style="font-size: 12px; margin-top: 20px; opacity: 0.7;">
+                © {{ "now"|date:"Y" }} {{ company_name }}. Todos os direitos reservados.<br>
+                Este é um email automático, não responda a esta mensagem.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

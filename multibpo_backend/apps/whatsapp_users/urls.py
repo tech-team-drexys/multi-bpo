@@ -3,7 +3,8 @@ from django.urls import path
 from .views import (
     ValidateUserView, RegisterMessageView, 
     UpdateUserView, HealthCheckView,
-    mobile_register_view, verify_email_view, mobile_login_view
+    mobile_register_view, verify_email_view, mobile_login_view,
+    metrics_view
 )
 
 app_name = 'whatsapp_users'
@@ -19,6 +20,7 @@ urlpatterns = [
     path('mobile/register/', mobile_register_view, name='mobile_register'),
     path('mobile/login/', mobile_login_view, name='mobile_login'),
     path('verify-email/<str:token>/', verify_email_view, name='verify_email'),
+    path('metrics/', metrics_view, name='metrics'),
     
     # Health check
     path('health/', HealthCheckView.as_view(), name='health_check'),

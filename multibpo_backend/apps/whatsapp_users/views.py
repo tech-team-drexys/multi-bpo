@@ -25,8 +25,11 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from rest_framework.decorators import api_view, permission_classes
-from django.utils import timezone
 import re
+from django.db.models import Count, Q
+from django.utils import timezone
+from datetime import timedelta
+import os
 
 # Imports específicos para views mobile
 from .models import EmailVerificationToken  # Novo modelo criado
@@ -623,3 +626,145 @@ def mobile_login_view(request):
             'message': 'Erro interno no servidor.',
             'error_code': 'INTERNAL_ERROR'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Trocar por permissão adequada em produção
+def metrics_view(request):
+    """Métricas do sistema para monitoramento"""
+    
+    # Verificar secret key
+    secret = request.GET.get('secret')
+    if secret != 'multibpo_metrics_2025':
+        return Response({'error': 'Unauthorized'}, status=401)
+    
+    try:
+        # Período de análise
+        now = timezone.now()
+        today = now.date()
+        week_ago = now - timedelta(days=7)
+        month_ago = now - timedelta(days=30)
+        
+        # Usuários por período
+        users_today = WhatsAppUser.objects.filter(created_at__date=today).count()
+        users_week = WhatsAppUser.objects.filter(created_at__gte=week_ago).count()
+        users_month = WhatsAppUser.objects.filter(created_at__gte=month_ago).count()
+        users_total = WhatsAppUser.objects.count()
+        
+        # Usuários por plano
+        users_by_plan = WhatsAppUser.objects.values('plano_atual').annotate(
+            count=Count('id')
+        )
+        
+        # Taxa de conversão
+        usuarios_novos = WhatsAppUser.objects.filter(plano_atual='novo').count()
+        usuarios_basicos = WhatsAppUser.objects.filter(plano_atual='basico').count()
+        usuarios_premium = WhatsAppUser.objects.filter(plano_atual='premium').count()
+        
+        conversao_cadastro = (usuarios_basicos + usuarios_premium) / max(users_total, 1) * 100
+        conversao_premium = usuarios_premium / max(users_total, 1) * 100
+        
+        # Mensagens por período
+        messages_today = WhatsAppMessage.objects.filter(created_at__date=today).count()
+        messages_week = WhatsAppMessage.objects.filter(created_at__gte=week_ago).count()
+        messages_month = WhatsAppMessage.objects.filter(created_at__gte=month_ago).count()
+        
+        # Tokens de verificação
+        tokens_pending = EmailVerificationToken.objects.filter(
+            is_verified=False,
+            created_at__gte=week_ago
+        ).count()
+        tokens_verified = EmailVerificationToken.objects.filter(
+            is_verified=True,
+            verified_at__gte=week_ago
+        ).count()
+        
+        # Health checks
+        health_checks = {
+            'database': True,  # Se chegou até aqui, DB está OK
+            'email': check_email_health(),
+            'whatsapp_api': check_whatsapp_api_health(),
+            'disk_space': check_disk_space()
+        }
+        
+        metrics = {
+            'timestamp': now.isoformat(),
+            'users': {
+                'today': users_today,
+                'week': users_week,
+                'month': users_month,
+                'total': users_total,
+                'by_plan': {item['plano_atual']: item['count'] for item in users_by_plan}
+            },
+            'conversion': {
+                'signup_rate': round(conversao_cadastro, 2),
+                'premium_rate': round(conversao_premium, 2)
+            },
+            'messages': {
+                'today': messages_today,
+                'week': messages_week,
+                'month': messages_month
+            },
+            'email_verification': {
+                'pending': tokens_pending,
+                'verified_week': tokens_verified
+            },
+            'health': health_checks,
+            'system': {
+                'version': 'MVP_FASE_4',
+                'uptime': get_system_uptime()
+            }
+        }
+        
+        return Response(metrics)
+        
+    except Exception as e:
+        return Response({
+            'error': 'Error generating metrics',
+            'message': str(e)
+        }, status=500)
+
+
+def check_email_health():
+    """Verificar saúde do sistema de email"""
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        # Verificar configurações
+        if not settings.EMAIL_HOST_USER:
+            return False
+            
+        return True
+    except:
+        return False
+
+
+def check_whatsapp_api_health():
+    """Verificar saúde da API WhatsApp"""
+    try:
+        import requests
+        response = requests.get('http://multibpo_ia_whatsapp:8004/webhook/', timeout=5)
+        return response.status_code == 200
+    except:
+        return False
+
+
+def check_disk_space():
+    """Verificar espaço em disco"""
+    try:
+        import shutil
+        total, used, free = shutil.disk_usage('/')
+        free_percent = (free / total) * 100
+        return free_percent > 10  # Retorna True se tem mais de 10% livre
+    except:
+        return False
+
+
+def get_system_uptime():
+    """Obter uptime do sistema"""
+    try:
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+            return round(uptime_seconds / 3600, 2)  # Em horas
+    except:
+        return 0

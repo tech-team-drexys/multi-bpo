@@ -12,6 +12,9 @@ services:
       - ./multibpo_backend:/app
       - multibpo_static_volume:/app/staticfiles
       - multibpo_logs:/app/logs
+      - multibpo_email_logs:/app/logs/email
+      - multibpo_metrics:/app/metrics
+      - multibpo_backups:/app/backups
     env_file:
       - .env
     depends_on:
@@ -93,7 +96,13 @@ volumes:
     driver: local
   multibpo_nginx_logs:
     driver: local
-  multibpo_logs:  # Novo volume para logs Django
+  multibpo_logs:
+    driver: local
+  multibpo_email_logs:
+    driver: local
+  multibpo_metrics:
+    driver: local
+  multibpo_backups:
     driver: local
 
 networks:

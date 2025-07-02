@@ -69,7 +69,8 @@ def get_mensagem_limite(whatsapp_user, limite_info):
 Para continuar conversando comigo, faça seu cadastro 
 e ganhe mais {get_limite_usuario_cadastrado() - get_limite_novo_usuario()} perguntas GRÁTIS!
 
-👉 Cadastre-se aqui: {get_url_cadastro()}?ref=whatsapp&phone={whatsapp_user.phone_number.replace('+', '')}
+📱 Cadastro rápido pelo celular:
+👉 {get_url_cadastro()}?ref=whatsapp&phone={whatsapp_user.phone_number.replace('+', '')}
 
 Após o cadastro, volte aqui e continue nossa conversa! 😊"""
     
@@ -79,11 +80,13 @@ Após o cadastro, volte aqui e continue nossa conversa! 😊"""
 Para ter acesso ILIMITADO à nossa IA especializada:
 
 ✅ Perguntas ilimitadas
-✅ Respostas prioritárias
+✅ Respostas prioritárias  
 ✅ Relatórios personalizados
+✅ Suporte especializado
 
 💰 Apenas R$ {get_valor_assinatura()}/mês
 
-👉 Assine agora: {get_url_premium()}?ref=whatsapp&phone={whatsapp_user.phone_number.replace('+', '')}"""
+📱 Assine agora pelo celular:
+👉 {get_url_premium()}?ref=whatsapp&phone={whatsapp_user.phone_number.replace('+', '')}"""
     
     return "Limite de perguntas atingido. Entre em contato conosco."

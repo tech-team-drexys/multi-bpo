@@ -28,9 +28,9 @@ def get_valor_assinatura():
 
 def get_url_cadastro():
     """URL para cadastro de usuários"""
-    return get_config_value('url_cadastro', 'https://multibpo.com.br/cadastro')
+    return get_config_value('url_cadastro', 'https://multibpo.com.br/m/cadastro')
 
 
 def get_url_premium():
     """URL para assinatura premium"""
-    return get_config_value('url_premium', 'https://multibpo.com.br/premium')
+    return get_config_value('url_premium', 'https://multibpo.com.br/m/premium')

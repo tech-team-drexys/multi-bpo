@@ -119,17 +119,29 @@ def send_welcome_email(user):
         except WhatsAppUser.DoesNotExist:
             pass
         
+        # 🔧 BUSCAR TELEFONE REAL DO USUÁRIO (3 linhas adicionadas)
+        user_phone = None
+        try:
+            from ..models import WhatsAppUser
+            whatsapp_user = WhatsAppUser.objects.get(user=user)
+            user_phone = whatsapp_user.phone_number.replace('+', '') if whatsapp_user.phone_number else None
+        except:
+            user_phone = None
+
+        # Context para templates
         context = {
             'user': user,
-            'whatsapp_user': whatsapp_user,
+            'verification_url': verification_url,
             'site_name': 'MultiBPO',
             'site_url': settings.FRONTEND_URL,
-            'whatsapp_url': 'https://wa.me/5511999999999',
+            'token': token,
             'support_email': 'contato@multibpo.com.br',
-            'company_name': 'MULTI BPO - Soluções Contábeis',
             'logo_url': f"{settings.FRONTEND_URL}/static/images/logo.png",
-            'perguntas_disponiveis': whatsapp_user.get_perguntas_restantes() if whatsapp_user else 10,
-            'plano_atual': whatsapp_user.get_plano_atual_display() if whatsapp_user else 'Básico',
+            'ip_address': ip_address,
+            'user_agent': user_agent,
+            'company_name': 'MULTI BPO - Soluções Contábeis',
+            'whatsapp_url': f'https://wa.me/{user_phone}' if user_phone else 'https://wa.me/5511999999999',  # 🔧 USAR TELEFONE REAL
+            'user_phone': user_phone,  # 🔧 ADICIONAR PARA O TEMPLATE
         }
         
         # Renderizar templates

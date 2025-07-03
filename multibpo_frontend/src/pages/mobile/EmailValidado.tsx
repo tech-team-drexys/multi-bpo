@@ -36,39 +36,35 @@ const EmailValidado = () => {
       const data = await response.json();
 
       if (data.success) {
-        if (data.already_verified) {
-          setVerificationStatus('success');
-          setMessage('Este email já foi verificado anteriormente.');
-        } else {
-          setVerificationStatus('success');
-          setMessage('Email verificado com sucesso! Sua conta está ativa.');
-          
-          // Se teve auto-login, salvar tokens
-          if (data.auto_login && data.tokens) {
-            localStorage.setItem('multibpo_access_token', data.tokens.access);
-            localStorage.setItem('multibpo_refresh_token', data.tokens.refresh);
-          }
-        }
-        
-        if (data.user) {
-          setUserEmail(data.user.email);
-        }
-      } else {
-        if (data.expired) {
-          setVerificationStatus('expired');
-          setMessage('Token de verificação expirado. Solicite um novo cadastro.');
-        } else if (data.invalid_token) {
-          setVerificationStatus('error');
-          setMessage('Link de verificação inválido.');
-        } else {
-          setVerificationStatus('error');
-          setMessage(data.message || 'Erro ao verificar email.');
-        }
-        
-        if (data.user_email) {
-          setUserEmail(data.user_email);
-        }
-      }
+  if (data.already_verified) {
+    setVerificationStatus('success');
+    setMessage('Este email já foi verificado anteriormente.');
+  } else {
+    setVerificationStatus('success');
+    setMessage('Email verificado com sucesso! Sua conta está ativa.');
+    
+    // Se teve auto-login, salvar tokens
+    if (data.auto_login && data.tokens) {
+      localStorage.setItem('multibpo_access_token', data.tokens.access);
+      localStorage.setItem('multibpo_refresh_token', data.tokens.refresh);
+    }
+    
+    // 🔧 SALVAR DADOS DA VERIFICAÇÃO PARA USO POSTERIOR
+    if (data.user_phone || data.whatsapp_redirect) {
+      const verificacaoData = {
+        user_phone: data.user_phone,
+        whatsapp_redirect: data.whatsapp_redirect,
+        verified_at: new Date().toISOString()
+      };
+      localStorage.setItem('verificacao_data', JSON.stringify(verificacaoData));
+      console.log('📱 Dados de verificação salvos:', verificacaoData);
+    }
+  }
+  
+  if (data.user) {
+    setUserEmail(data.user.email);
+  }
+}
     } catch (error) {
       console.error('Erro na verificação:', error);
       setVerificationStatus('error');
@@ -76,11 +72,20 @@ const EmailValidado = () => {
     }
   };
 
-  const handleBackToWhatsApp = () => {
-    // 📱 Redirecionar para WhatsApp
-    const whatsappUrl = 'https://wa.me/5511999999999'; // Configurar número do MultiBPO
-    window.open(whatsappUrl, '_blank');
-  };
+const handleBackToWhatsApp = () => {
+  // 🔧 USAR NÚMERO DA IA MULTIBPO (não o seu número)
+  const multibpoAINumber = '5511945648629';
+  
+  // 🔧 MENSAGEM CORRIGIDA
+  const message = encodeURIComponent('Acabei de verificar meu email! Ganhei 7 perguntas extras. Agora posso tirar dúvidas sobre a MULTI BPO e seus serviços. Vamos lá?');
+  const whatsappUrl = `https://wa.me/${multibpoAINumber}?text=${message}`;
+  
+  console.log('🔗 Redirecionando para IA MultiBPO:', whatsappUrl);
+  console.log('📱 Número da IA:', multibpoAINumber);
+  
+  // Abrir WhatsApp com a IA MultiBPO
+  window.open(whatsappUrl, '_blank');
+};
 
   const handleBackToSystem = () => {
     // Redireciona para a página principal

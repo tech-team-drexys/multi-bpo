@@ -2,7 +2,6 @@
 from ..models import WhatsAppUser
 from .config_helpers import get_limite_novo_usuario, get_limite_usuario_cadastrado, get_url_cadastro, get_url_premium, get_valor_assinatura
 
-
 def verificar_limites_usuario(whatsapp_user):
     """
     Verificar se usuário pode fazer pergunta baseado em seus limites
@@ -18,7 +17,7 @@ def verificar_limites_usuario(whatsapp_user):
     # Definir limite baseado no plano
     if whatsapp_user.plano_atual == 'novo':
         limite_total = get_limite_novo_usuario()
-    elif whatsapp_user.plano_atual == 'cadastrado':
+    elif whatsapp_user.plano_atual == 'basico':  # ← CORREÇÃO: 'cadastrado' → 'basico'
         limite_total = get_limite_usuario_cadastrado()
     elif whatsapp_user.plano_atual == 'premium':
         # Premium = ilimitado
@@ -41,7 +40,7 @@ def verificar_limites_usuario(whatsapp_user):
         proxima_acao = 'continue'
     elif whatsapp_user.plano_atual == 'novo':
         proxima_acao = 'upgrade_cadastro'
-    elif whatsapp_user.plano_atual == 'cadastrado':
+    elif whatsapp_user.plano_atual == 'basico':  # ← CORREÇÃO: 'cadastrado' → 'basico'
         proxima_acao = 'upgrade_premium'
     else:
         proxima_acao = 'blocked'
@@ -74,7 +73,7 @@ e ganhe mais {get_limite_usuario_cadastrado() - get_limite_novo_usuario()} pergu
 
 Após o cadastro, volte aqui e continue nossa conversa! 😊"""
     
-    elif whatsapp_user.plano_atual == 'cadastrado':
+    elif whatsapp_user.plano_atual == 'basico': 
         return f"""Parabéns! Você aproveitou ao máximo suas {get_limite_usuario_cadastrado()} perguntas gratuitas! 🚀
 
 Para ter acesso ILIMITADO à nossa IA especializada:

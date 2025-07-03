@@ -338,13 +338,33 @@ def mobile_register_view(request):
                 'field_errors': {'email': 'Email já cadastrado'}
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        # Verificar se WhatsApp já está cadastrado
-        if WhatsAppUser.objects.filter(phone_number=whatsapp_normalized).exists():
-            return Response({
-                'success': False,
-                'message': 'Este WhatsApp já está cadastrado. Faça login ou use outro número.',
-                'field_errors': {'whatsapp': 'WhatsApp já cadastrado'}
-            }, status=status.HTTP_400_BAD_REQUEST)
+        # ========== CORREÇÃO DA REGRA DE NEGÓCIO - 03/07/2025 ==========
+        # Verificar se WhatsApp já está cadastrado com LÓGICA INTELIGENTE
+        existing_whatsapp = WhatsAppUser.objects.filter(phone_number=whatsapp_normalized).first()
+
+        if existing_whatsapp:
+            if existing_whatsapp.email and existing_whatsapp.email.strip():
+                # WhatsApp JÁ TEM EMAIL - Bloquear com informação detalhada
+                return Response({
+                    'success': False,
+                    'message': 'Este WhatsApp já possui um email cadastrado. Faça login ou use outro número.',
+                    'field_errors': {'whatsapp': 'WhatsApp já possui email cadastrado'},
+                    'data': {
+                        'whatsapp_has_email': True,
+                        'existing_email_masked': existing_whatsapp.email[:3] + '***@' + existing_whatsapp.email.split('@')[1] if '@' in            existing_whatsapp.email else 'email***',
+                        'login_url': '/m/login',
+                        'action_suggestion': 'Faça login com a conta existente ou use outro WhatsApp'
+                    },
+                    'error_code': 'WHATSAPP_HAS_EMAIL'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # WhatsApp SEM EMAIL - PERMITIR VINCULAÇÃO (Este é o caso do Alle!)
+                print(f"🔗 VINCULAÇÃO PERMITIDA: WhatsApp {whatsapp_normalized} sem email será vinculado a {email}")
+                # Não retorna erro - continua o fluxo normal
+        else:
+            # WhatsApp não existe - fluxo normal de criação
+            print(f"🆕 NOVO USUÁRIO: WhatsApp {whatsapp_normalized} será criado com email {email}")
+        # ================================================================
         
         # Criar usuário Django (inativo até verificar email)
         user = User.objects.create_user(
@@ -356,18 +376,31 @@ def mobile_register_view(request):
             is_active=False  # Ativar apenas após verificação de email
         )
         
-        # Criar WhatsAppUser vinculado (inativo até verificar email)
-        whatsapp_user = WhatsAppUser.objects.create(
-            user=user,
-            phone_number=whatsapp_normalized,
-            nome=nome or email.split('@')[0],
-            email=email,
-            plano_atual='novo',  # Começa como novo até verificar email
-            limite_perguntas=3,
-            ativo=False,  # Ativar após verificação
-            termos_aceitos=True,  # Assumir aceite na página mobile
-            termos_aceitos_em=timezone.now()
-        )
+                # Criar ou atualizar WhatsAppUser (LÓGICA INTELIGENTE)
+        if existing_whatsapp and not (existing_whatsapp.email and existing_whatsapp.email.strip()):
+            # ========== CENÁRIO: VINCULAR WHATSAPPUSER EXISTENTE SEM EMAIL ==========
+            whatsapp_user = existing_whatsapp
+            whatsapp_user.user = user
+            whatsapp_user.email = email
+            whatsapp_user.nome = whatsapp_user.nome or nome or email.split('@')[0]
+            whatsapp_user.termos_aceitos = True
+            whatsapp_user.termos_aceitos_em = timezone.now()
+            whatsapp_user.save()
+            print(f"🔗 WhatsAppUser ID {whatsapp_user.id} vinculado ao User ID {user.id}")
+        else:
+         # ========== CENÁRIO: CRIAR NOVO WHATSAPPUSER ==========
+            whatsapp_user = WhatsAppUser.objects.create(
+                user=user,
+                phone_number=whatsapp_normalized,
+                nome=nome or email.split('@')[0],
+                email=email,
+                plano_atual='novo',
+                limite_perguntas=3,
+                ativo=False,
+                termos_aceitos=True,
+                termos_aceitos_em=timezone.now()
+            )
+            print(f"✅ NOVO WhatsAppUser criado: ID {whatsapp_user.id}")
         
         # Gerar token de verificação
         ip_address = get_client_ip(request)

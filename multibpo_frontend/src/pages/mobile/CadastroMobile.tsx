@@ -107,9 +107,19 @@ const CadastroMobile = () => {
         const verifyUrl = `/m/verificar-email?email=${encodeURIComponent(data.email || email)}`;
         navigate(verifyUrl);
       } else {
-        // ❌ Erro da API
+        // ❌ Erro da API - NOVA LÓGICA DE TRATAMENTO
         if (data.field_errors) {
           setErrors(data.field_errors);
+    
+          // ========== NOVO: Verificar se é WhatsApp com email existente ==========
+          if (data.data?.whatsapp_has_email) {
+            setErrors({
+              ...data.field_errors,
+              whatsapp_info: `Este WhatsApp já está vinculado ao email: ${data.data.existing_email_masked}`,
+              whatsapp_suggestion: data.data.action_suggestion
+            });
+          }
+          // =====================================================================
         } else {
           setErrors({ general: data.message || 'Erro ao cadastrar usuário' });
         }
@@ -239,6 +249,30 @@ const CadastroMobile = () => {
                 {errors.whatsapp && (
                   <p className="text-red-500 text-xs mt-1">{errors.whatsapp}</p>
                 )}
+
+                {/* ========== NOVO: Componente informativo para WhatsApp com email ========== */}
+                {errors.whatsapp_info && (
+                  <div className="bg-blue-50 border border-blue-200 text-blue-700 px-3 py-2 rounded-md text-xs mt-1">
+                    <div className="flex items-start space-x-2">
+                      <span className="text-blue-500 mt-0.5">ℹ️</span>
+                      <div>
+                        <p className="font-medium">{errors.whatsapp_info}</p>
+                        <p className="mt-1 text-blue-600">
+                          <Link to="/m/login" className="underline hover:no-underline">
+                            Clique aqui para fazer login
+                          </Link>
+                          {" ou use outro número de WhatsApp"}
+                        </p>
+                        {errors.whatsapp_suggestion && (
+                          <p className="mt-1 text-xs text-blue-500">
+            💡                {errors.whatsapp_suggestion}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* ========================================================================= */}
               </div>
 
               {/* Campo Senha */}

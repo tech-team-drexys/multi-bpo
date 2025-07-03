@@ -1,3 +1,5 @@
+# multibpo_backend/apps/whatsapp_users/models.py
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
@@ -146,6 +148,7 @@ class WhatsAppUser(models.Model):
         """Marca email como verificado e faz upgrade para básico"""
         self.email_verificado = True
         self.email_verificado_em = timezone.now()
+        self.ativo = True  # ← CORREÇÃO: Ativar WhatsAppUser também
         if self.plano_atual == 'novo':
             self.upgrade_plano('basico')
         self.save()

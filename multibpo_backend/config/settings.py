@@ -6,6 +6,40 @@ from datetime import timedelta  # ← NOVO: Import para JWT
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ===================================================================
+# CARREGAR ARQUIVO .ENV
+# ===================================================================
+
+# Carregar variáveis do arquivo .env
+try:
+    from dotenv import load_dotenv
+    
+    # Tentar múltiplos caminhos possíveis
+    possible_paths = [
+        BASE_DIR.parent.parent / '.env',  # /app/.env
+        BASE_DIR.parent / '.env',         # /app/multibpo_backend/.env
+        Path('/app') / '.env',            # /app/.env (absoluto)
+        Path('.env'),                     # .env (relativo)
+    ]
+    
+    env_loaded = False
+    for env_path in possible_paths:
+        if env_path.exists():
+            load_dotenv(dotenv_path=env_path)
+            print(f"✅ Arquivo .env carregado de: {env_path}")
+            env_loaded = True
+            break
+    
+    if not env_loaded:
+        print(f"⚠️  Arquivo .env não encontrado nos caminhos: {[str(p) for p in possible_paths]}")
+        
+except ImportError:
+    print("⚠️  python-dotenv não instalado, usando apenas variáveis de ambiente do sistema")
+except Exception as e:
+    print(f"⚠️  Erro ao carregar .env: {e}")
+
+# ===================================================================
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-key-change-in-production')
 
@@ -442,3 +476,13 @@ MOBILE_TOKEN_MAX_AGE = 3600  # 1 hora em segundos
 WHATSAPP_CADASTRO_URL = MOBILE_CADASTRO_URL
 WHATSAPP_LOGIN_URL = MOBILE_LOGIN_URL
 WHATSAPP_POLITICA_URL = MOBILE_POLITICA_URL
+
+# ===================================================================
+# ASAAS CONFIGURATION - Sistema de Pagamento
+# ===================================================================
+
+# Configurações do Asaas
+ASAAS_API_KEY = os.environ.get('ASAAS_API_KEY', '')
+ASAAS_BASE_URL = os.environ.get('ASAAS_BASE_URL', 'https://www.asaas.com/api/v3')
+ASAAS_WEBHOOK_TOKEN = os.environ.get('ASAAS_WEBHOOK_TOKEN', '')
+SITE_URL = os.environ.get('SITE_URL', 'https://multibpo.com.br')

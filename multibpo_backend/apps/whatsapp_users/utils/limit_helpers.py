@@ -23,7 +23,7 @@ def verificar_limites_usuario(whatsapp_user):
         # Premium = ilimitado
         return {
             'pode_perguntar': True,
-            'perguntas_restantes': -1,  # -1 = ilimitado
+            'perguntas_restantes': 999999,  # ✅ CORREÇÃO: Número alto em vez de -1 
             'limite_atingido': False,
             'proxima_acao': 'continue'
         }
@@ -31,9 +31,15 @@ def verificar_limites_usuario(whatsapp_user):
         # Plano desconhecido, assumir novo usuário
         limite_total = get_limite_novo_usuario()
     
-    # Calcular restantes
+    # Calcular restantes - NOVA LÓGICA: permite enviar 4ª pergunta
     perguntas_restantes = limite_total - whatsapp_user.perguntas_realizadas
-    pode_perguntar = perguntas_restantes > 0
+
+    # Para usuários novos: permitir enviar 4ª pergunta (mas será bloqueada antes da IA responder)
+    if whatsapp_user.plano_atual == 'novo':
+        pode_perguntar = perguntas_restantes >= 0  # Mudou de > 0 para >= 0
+    else:
+    # Outros planos: manter lógica original  
+        pode_perguntar = perguntas_restantes > 0
     
     # Determinar próxima ação
     if pode_perguntar:
@@ -61,31 +67,54 @@ def incrementar_contador_usuario(whatsapp_user):
 
 
 def get_mensagem_limite(whatsapp_user, limite_info):
-    """Gerar mensagem apropriada quando limite é atingido"""
+    """Gerar mensagem apropriada quando limite é atingido COM dados do botão"""
     if whatsapp_user.plano_atual == 'novo':
-        return f"""Você já utilizou suas {get_limite_novo_usuario()} perguntas gratuitas! 🎯
+        # ✅ MENSAGEM CORRETA: Usuário novo (3 perguntas) → CADASTRO
+        mensagem = """⚠️ Você atingiu o limite máximo de mensagens.
+Para continuar acessando nossos serviços, faça login ou cadastre-se gratuitamente agora mesmo.
+🔐 É rápido, seguro e gratuito!
 
-Para continuar conversando comigo, faça seu cadastro 
-e ganhe mais {get_limite_usuario_cadastrado() - get_limite_novo_usuario()} perguntas GRÁTIS!
+📝 Cadastre-se e ganhe mais 7 perguntas GRÁTIS!
+✅ Total de 10 perguntas no plano gratuito
+✅ Acesso também pelo computador
+✅ Histórico das suas conversas
 
-📱 Cadastro rápido pelo celular:
-👉 {get_url_cadastro()}?ref=whatsapp&phone={whatsapp_user.phone_number.replace('+', '')}
-
-Após o cadastro, volte aqui e continue nossa conversa! 😊"""
+Após o cadastro, volte aqui para continuar! 😊"""
+        
+        # Dados do botão para cadastro
+        phone_clean = whatsapp_user.phone_number.replace('+', '') if whatsapp_user.phone_number else ''
+        botao_dados = {
+            'text': '👉 Continuar',
+            'url': f'{get_url_cadastro()}?ref=whatsapp&phone={phone_clean}'
+        }
+        
+        return {
+            'mensagem': mensagem,
+            'botao': botao_dados,
+            'tipo': 'limite_cadastro'
+        }
     
-    elif whatsapp_user.plano_atual == 'basico': 
-        return f"""Parabéns! Você aproveitou ao máximo suas {get_limite_usuario_cadastrado()} perguntas gratuitas! 🚀
+    elif whatsapp_user.plano_atual == 'basico':
+        # ✅ MENSAGEM CORRETA: Usuário básico (10 perguntas) → PREMIUM
+        return f"""🚫 Você atingiu o limite máximo de mensagens do plano gratuito.
+Para continuar utilizando nossos serviços, contrate um plano ou aguarde 7 dias para ter novo acesso.
 
-Para ter acesso ILIMITADO à nossa IA especializada:
+💼 Com o Plano Premium, você terá:
 
-✅ Perguntas ilimitadas
-✅ Respostas prioritárias  
-✅ Relatórios personalizados
-✅ Suporte especializado
+✅ Uso pessoal e profissional
+✅ Integração total com o WhatsApp
+✅ Acesso também pelo computador
+✅ Consultas 24 horas, 7 dias por semana
+✅ IA mais avançada, com respostas ainda mais precisas
 
-💰 Apenas R$ {get_valor_assinatura()}/mês
+💰 Tudo isso por apenas R$ {get_valor_assinatura()}/mês
+Muito menos do que um funcionário especializado!
 
-📱 Assine agora pelo celular:
-👉 {get_url_premium()}?ref=whatsapp&phone={whatsapp_user.phone_number.replace('+', '')}"""
+🎁 Oferta exclusiva:
+Use o cupom QUEROAGORA e ganhe 50% de desconto.
+Assine agora por apenas R$ {float(get_valor_assinatura()) / 2:.2f}/mês!
+
+🔥 Invista no que realmente facilita sua rotina.
+📆 Acesso liberado imediatamente após a confirmação!"""
     
     return "Limite de perguntas atingido. Entre em contato conosco."

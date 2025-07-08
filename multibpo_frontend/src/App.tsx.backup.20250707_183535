@@ -17,10 +17,6 @@ import EmailValidado from "./pages/mobile/EmailValidado";
 import LoginMobile from "./pages/mobile/LoginMobile";
 import PoliticaMobile from "./pages/mobile/PoliticaMobile";
 
-// ===== NOVAS PÁGINAS ASAAS PREMIUM =====
-import PremiumMobile from "./pages/mobile/PremiumMobile";
-import PremiumSuccess from "./pages/mobile/PremiumSuccess";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -43,10 +39,6 @@ const App = () => (
           <Route path="/m/sucesso" element={<EmailValidado />} />
           <Route path="/m/login" element={<LoginMobile />} />
           <Route path="/m/politica" element={<PoliticaMobile />} />
-          
-          {/* ===== ROTAS ASAAS PREMIUM ===== */}
-          <Route path="/m/premium" element={<PremiumMobile />} />
-          <Route path="/m/premium/sucesso" element={<PremiumSuccess />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

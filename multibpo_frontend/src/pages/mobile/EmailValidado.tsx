@@ -77,7 +77,7 @@ const handleBackToWhatsApp = () => {
   const multibpoAINumber = '5511945648629';
   
   // 🔧 MENSAGEM CORRIGIDA
-  const message = encodeURIComponent('Acabei de verificar meu email! Ganhei 7 perguntas extras. Agora posso tirar dúvidas sobre a MULTI BPO e seus serviços. Vamos lá?');
+  const message = encodeURIComponent('Acabei de verificar meu email! Agora posso tirar dúvidas sobre a MULTI BPO e seus serviços. Vamos lá?');
   const whatsappUrl = `https://wa.me/${multibpoAINumber}?text=${message}`;
   
   console.log('🔗 Redirecionando para IA MultiBPO:', whatsappUrl);

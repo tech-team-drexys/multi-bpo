@@ -7,6 +7,12 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from .services.asaas import AsaasService
+from .models import AssinaturaAsaas
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .serializers import (
     ValidateUserRequestSerializer, ValidateUserResponseSerializer,
@@ -801,3 +807,103 @@ def get_system_uptime():
             return round(uptime_seconds / 3600, 2)  # Em horas
     except:
         return 0
+    
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateSubscriptionView(APIView):
+    """API para criar subscription no Asaas - Acesso público"""
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        try:
+            phone_number = request.data.get('phone_number')
+            
+            if not phone_number:
+                return Response({'success': False, 'error': 'phone_number é obrigatório'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Normalizar telefone
+            if not phone_number.startswith('+'):
+                if phone_number.startswith('55'):
+                    phone_number = '+' + phone_number
+                else:
+                    phone_number = '+55' + phone_number
+            
+            try:
+                whatsapp_user = WhatsAppUser.objects.get(phone_number=phone_number)
+            except WhatsAppUser.DoesNotExist:
+                return Response({'success': False, 'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+            
+            assinatura_ativa = AssinaturaAsaas.objects.filter(
+                whatsapp_user=whatsapp_user,
+                status__in=['ACTIVE', 'PENDING']
+            ).first()
+            
+            if assinatura_ativa:
+                return Response({
+                    'success': True,
+                    'checkout_url': assinatura_ativa.checkout_url,
+                    'message': 'Assinatura existente encontrada'
+                })
+            
+            # Criar nova assinatura
+            asaas_service = AsaasService()
+            checkout_url = asaas_service.create_subscription(whatsapp_user)
+            
+            return Response({
+                'success': True,
+                'checkout_url': checkout_url,
+                'message': 'Subscription criada com sucesso'
+            })
+        
+        except Exception as e:
+            logger.error(f"❌ Erro ao criar subscription: {e}")
+            return Response({'success': False, 'error': f'Erro interno: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AsaasWebhookView(APIView):
+    """Webhook para receber notificações do Asaas"""
+    
+    authentication_classes = []  # Sem autenticação
+    permission_classes = []
+    
+    def post(self, request):
+        try:
+            print(f"🔔 Webhook Asaas recebido: {request.data}")
+            
+            webhook_token = request.headers.get('X-Webhook-Token', '')
+            asaas_service = AsaasService()
+            
+            if not asaas_service.validate_webhook_token(webhook_token):
+                print(f"❌ Token do webhook inválido: {webhook_token}")
+                return Response({'error': 'Token inválido'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            success = asaas_service.process_webhook_payment(request.data)
+            
+            return Response({'status': 'processed' if success else 'ignored'})
+        
+        except Exception as e:
+            print(f"❌ Erro no webhook Asaas: {e}")
+            return Response({'error': 'Erro interno'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class AsaasTestView(APIView):
+    """API para testar conexão com Asaas"""
+    
+    authentication_classes = []
+    permission_classes = []
+    
+    def get(self, request):
+        try:
+            asaas_service = AsaasService()
+            connection_ok = asaas_service.test_connection()
+            
+            return Response({
+                'success': connection_ok,
+                'message': 'Conexão OK' if connection_ok else 'Erro na conexão',
+                'api_key_configured': bool(asaas_service.api_key),
+                'base_url': asaas_service.base_url
+            })
+        
+        except Exception as e:
+            return Response({'success': False, 'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

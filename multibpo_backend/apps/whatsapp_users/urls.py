@@ -4,7 +4,9 @@ from .views import (
     ValidateUserView, RegisterMessageView, 
     UpdateUserView, HealthCheckView,
     mobile_register_view, verify_email_view, mobile_login_view,
-    metrics_view
+    metrics_view,
+    # Asaas views
+    CreateSubscriptionView, AsaasWebhookView, AsaasTestView
 )
 
 app_name = 'whatsapp_users'
@@ -25,4 +27,13 @@ urlpatterns = [
     # Health check
     path('health/', HealthCheckView.as_view(), name='health_check'),
     path('', HealthCheckView.as_view(), name='health_check_root'),  # Para testar /api/v1/whatsapp/
+
+    # API para criar subscription
+    path('asaas/create-subscription/', CreateSubscriptionView.as_view(), name='asaas-create-subscription'),
+    
+    # Webhook para notificações do Asaas
+    path('asaas/webhook/', AsaasWebhookView.as_view(), name='asaas-webhook'),
+    
+    # API de teste da conexão Asaas
+    path('asaas/test/', AsaasTestView.as_view(), name='asaas-test'),
 ]

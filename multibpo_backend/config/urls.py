@@ -57,31 +57,3 @@ if settings.DEBUG:
         # Debug toolbar não instalado - ignora silenciosamente
         pass
 
-# ========== ESTRUTURA DE URLs RESULTANTE ==========
-"""
-APIs disponíveis após correção:
-
-AUTENTICAÇÃO:
-- POST /api/v1/auth/register/              # Registro completo original
-- POST /api/v1/auth/register-service/      # Registro BPO simplificado
-- POST /api/v1/auth/login/                 # Login flexível
-- GET  /api/v1/auth/profile/               # Perfil contador
-- POST /api/v1/auth/logout/                # Logout seguro
-- POST /api/v1/auth/validate/document/     # Validação CPF/CNPJ
-
-RECEITA FEDERAL:
-- GET  /api/v1/receita/health/             # Health check serviços RF
-- GET  /api/v1/receita/cnpj/{cnpj}/        # Consulta CNPJ na RF
-
-CONTADORES:
-- GET  /api/v1/contadores/test/            # Teste (placeholder)
-
-JWT TOKENS:
-- POST /api/v1/token/                      # Obter tokens JWT
-- POST /api/v1/token/refresh/              # Renovar tokens
-
-OBSERVAÇÃO:
-- Removido namespace duplicado que causava erro
-- Validação de documentos agora disponível apenas em: /api/v1/auth/validate/document/
-- Sistema agora deve inicializar sem erros
-"""

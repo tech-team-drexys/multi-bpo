@@ -50,6 +50,15 @@ def verificar_status_usuario(whatsapp_user):
             'usuario_completo': bool
         }
     """
+    # 🔥 CORREÇÃO CRÍTICA: Premium nunca precisa termos/nome
+    if whatsapp_user.plano_atual == 'premium':
+        return {
+            'precisa_termos': False,
+            'precisa_nome': False,
+            'usuario_completo': True
+        }
+    
+    # Para usuários não-premium, verificar normalmente
     precisa_termos = not whatsapp_user.termos_aceitos
     precisa_nome = not whatsapp_user.nome or len(whatsapp_user.nome.strip()) < 2
     
@@ -92,21 +101,18 @@ def atualizar_usuario_whatsapp(whatsapp_user, action, data):
         if email:
             whatsapp_user.email = email
             whatsapp_user.email_verificado = True
-            # Upgrade para plano cadastrado
+            # Upgrade para plano básico
             if whatsapp_user.plano_atual == 'novo':
-                whatsapp_user.plano_atual = 'cadastrado'
-                whatsapp_user.limite_perguntas = get_limite_usuario_cadastrado()
-            updated = True
-            message = "Email verificado e plano atualizado!"
+                whatsapp_user.plano_atual = 'basico'  # ✅ CORREÇÃO: nome consistente
     
     elif action == 'upgrade_plano':
         novo_plano = data.get('plano', '')
         if novo_plano in ['cadastrado', 'premium']:
             whatsapp_user.plano_atual = novo_plano
             if novo_plano == 'premium':
-                whatsapp_user.limite_perguntas = None  # Ilimitado
-            updated = True
-            message = f"Plano atualizado para: {novo_plano}"
+                whatsapp_user.limite_perguntas = 999999  # ✅ CORREÇÃO: Número alto
+            elif novo_plano == 'cadastrado':
+                whatsapp_user.limite_perguntas = get_limite_usuario_cadastrado()
     
     if updated:
         whatsapp_user.save()

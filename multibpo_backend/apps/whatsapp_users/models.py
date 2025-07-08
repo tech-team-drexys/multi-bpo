@@ -8,6 +8,7 @@ import re
 import secrets
 
 
+
 class WhatsAppUser(models.Model):
     """
     Model principal para usuários do WhatsApp
@@ -433,3 +434,120 @@ class EmailVerificationToken(models.Model):
         """
         from django.conf import settings
         return f"{settings.EMAIL_VERIFICATION_URL}/{self.token}"
+    
+# ===================================================================
+# ASAAS INTEGRATION - Sistema de Pagamento Premium
+# ===================================================================
+
+class AssinaturaAsaas(models.Model):
+    """Model para gerenciar assinaturas premium via Asaas"""
+    
+    whatsapp_user = models.ForeignKey(
+        WhatsAppUser, 
+        on_delete=models.CASCADE,
+        related_name='assinaturas',
+        verbose_name="Usuário WhatsApp"
+    )
+    customer_id = models.CharField(
+        max_length=100,
+        help_text="ID do customer no Asaas",
+        verbose_name="Customer ID"
+    )
+    subscription_id = models.CharField(
+        max_length=100, 
+        unique=True,
+        help_text="ID da subscription no Asaas",
+        verbose_name="Subscription ID"
+    )
+    checkout_url = models.URLField(
+        help_text="URL do checkout gerada pelo Asaas",
+        verbose_name="URL do Checkout"
+    )
+    valor = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=29.90,
+        help_text="Valor da assinatura mensal",
+        verbose_name="Valor"
+    )
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ('PENDING', 'Pendente'),
+            ('ACTIVE', 'Ativa'),
+            ('SUSPENDED', 'Suspensa'),
+            ('CANCELLED', 'Cancelada'),
+            ('OVERDUE', 'Em atraso'),
+        ],
+        default='PENDING',
+        verbose_name="Status"
+    )
+    origem = models.CharField(
+        max_length=20,
+        choices=[
+            ('whatsapp', 'WhatsApp'),
+            ('site', 'Site Web'),
+        ],
+        default='whatsapp',
+        help_text="Origem da assinatura",
+        verbose_name="Origem"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Criado em"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Atualizado em"
+    )
+    
+    # Dados adicionais do Asaas
+    external_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Referência externa para o Asaas",
+        verbose_name="Referência Externa"
+    )
+    next_due_date = models.DateField(
+        null=True, 
+        blank=True,
+        help_text="Próxima data de cobrança",
+        verbose_name="Próxima Cobrança"
+    )
+    
+    class Meta:
+        verbose_name = "Assinatura Asaas"
+        verbose_name_plural = "Assinaturas Asaas"
+        ordering = ['-created_at']
+        db_table = 'whatsapp_assinatura_asaas'
+    
+    def __str__(self):
+        return f"{self.whatsapp_user.phone_number} - {self.status} - R${self.valor}"
+    
+    @property
+    def is_active(self):
+        """Verifica se a assinatura está ativa"""
+        return self.status == 'ACTIVE'
+    
+    @property
+    def formatted_phone(self):
+        """Retorna telefone formatado"""
+        return self.whatsapp_user.phone_number
+    
+    @property
+    def customer_name(self):
+        """Retorna nome do cliente"""
+        return self.whatsapp_user.nome or f"Usuário {self.whatsapp_user.phone_number}"
+    
+    def ativar_premium(self):
+        """Ativa o plano premium para o usuário"""
+        self.status = 'ACTIVE'
+        self.whatsapp_user.plano_atual = 'premium'
+        self.whatsapp_user.limite_perguntas = None  # Ilimitado
+        self.save()
+        self.whatsapp_user.save()
+        
+        # Log da ativação
+        print(f"✅ Usuário {self.whatsapp_user.phone_number} upgradado para PREMIUM!")
+        
+        return True

@@ -100,9 +100,18 @@
 
   html,
   body {
-    @apply overflow-x-hidden;
     width: 100%;
     position: relative;
+  }
+
+  /* Prevenir overflow horizontal em seções específicas que precisam */
+  .carousel-container,
+  .header-dropdown-container {
+    @apply overflow-x-hidden;
+  }
+
+  html {
+    scroll-behavior: auto; /* Remove o smooth scroll nativo para usar o Lenis */
   }
 
   body {
@@ -111,7 +120,6 @@
   }
 
   #root {
-    @apply overflow-x-hidden;
     width: 100%;
   }
 
@@ -136,6 +144,71 @@
 
   .animate-blink {
     animation: blink 1s infinite;
+  }
+
+  /* Scroll reveal animations */
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .scroll-reveal-delay-100 {
+    transition-delay: 0.1s;
+  }
+
+  .scroll-reveal-delay-200 {
+    transition-delay: 0.2s;
+  }
+
+  .scroll-reveal-delay-300 {
+    transition-delay: 0.3s;
+  }
+
+  .scroll-reveal-delay-400 {
+    transition-delay: 0.4s;
+  }
+
+  .scroll-reveal-from-left {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .scroll-reveal-from-left.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-reveal-from-right {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .scroll-reveal-from-right.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-reveal-scale {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .scroll-reveal-scale.is-visible {
+    opacity: 1;
+    transform: scale(1);
   }
 
   .hover\:scale-103:hover {

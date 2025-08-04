@@ -14,6 +14,8 @@ interface FeatureStepsProps {
   features: Feature[];
   className?: string;
   title?: string;
+  span?: string;
+  postSpan?: string;
   description?: string;
   autoPlayInterval?: number;
   imageHeight?: string;
@@ -24,6 +26,8 @@ export function FeatureSteps({
   features,
   className,
   title = "How to get Started",
+  span,
+  postSpan,
   description,
   autoPlayInterval = 3000,
 }: FeatureStepsProps) {
@@ -53,7 +57,8 @@ export function FeatureSteps({
       <div className="max-w-7xl mx-auto w-full">
         <div className={`text-center ${spacing.content.lg}`}>
           <h2 className={`${typography.heading.lg} text-gray-900 mb-4`}>
-            {title}
+            {title} <span className="text-blue-600">{span}</span>{" "}
+            {postSpan && <span className="text-gray-900">{postSpan}</span>}
           </h2>
           {description && (
             <p
@@ -64,8 +69,8 @@ export function FeatureSteps({
           )}
         </div>
 
-        <div className="flex flex-col md:grid md:grid-cols-[1fr_1.3fr] gap-6 md:gap-12 items-stretch">
-          <div className="order-2 md:order-1 space-y-10 md:max-w-md w-full">
+        <div className="flex flex-col md:grid md:grid-cols-[1fr_1.3fr] gap-6 md:gap-24 items-stretch">
+          <div className="order-2 md:order-1 space-y-12 w-full">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
@@ -86,11 +91,11 @@ export function FeatureSteps({
                   <span className="text-lg font-semibold">{index + 1}</span>
                 </motion.div>
 
-                <div className="flex-1">
+                <div className="flex-1 space-y-2">
                   <h3 className={`${typography.heading.sm} text-gray-900`}>
                     {feature.title || feature.step}
                   </h3>
-                  <p className={`${typography.body.md} text-gray-600`}>
+                  <p className={`${typography.body.sm} text-gray-600`}>
                     {feature.content}
                   </p>
                 </div>
@@ -100,7 +105,7 @@ export function FeatureSteps({
 
           <div
             className={cn(
-              `order-1 md:order-2 relative overflow-hidden rounded-lg mx-auto w-full h-[320px] md:h-[520px] lg:h-[560px]`
+              `order-1 md:order-2 relative overflow-hidden rounded-lg mx-auto w-full h-[320px] md:h-[480px] lg:h-[500px]`
             )}
           >
             <AnimatePresence mode="wait">
@@ -118,7 +123,7 @@ export function FeatureSteps({
                       <img
                         src={feature.image}
                         alt={feature.step}
-                        className="w-full h-full object-cover transition-transform transform"
+                        className="h-full object-cover transition-transform transform"
                       />
                     </motion.div>
                   )

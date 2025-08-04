@@ -35,7 +35,8 @@ const Courses = () => {
   return (
     <section
       ref={ref}
-      className={`${backgrounds.secondary} ${spacing.section.md}`}
+      className={`${backgrounds.secondary} ${spacing.section.md} xl:pb-44 xl:pt-40`}
+      id="courses"
     >
       <div className={`${spacing.container} w-full`}>
         <div

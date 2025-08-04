@@ -39,12 +39,9 @@ const QuemSomos = () => {
 
   return (
     <section
-      className={`${spacing.section.lg} ${backgrounds.accent} relative overflow-hidden`}
+      className={`${spacing.section.lg} ${backgrounds.secondary} relative overflow-hidden`}
     >
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-      <div className="absolute top-20 right-20 w-72 h-72 bg-blue-100 rounded-full blur-3xl opacity-30"></div>
-      <div className="absolute bottom-20 left-20 w-96 h-96 bg-purple-100 rounded-full blur-3xl opacity-20"></div>
 
       <div className={`${spacing.container} relative z-10`}>
         {/* Header */}

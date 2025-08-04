@@ -86,7 +86,7 @@ const AboutUs = () => {
                   : "translate-y-8 opacity-0"
               }`}
             >
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center active:scale-[.98] transition-all duration-150">
                 Conheça Nossa História
                 <ArrowRight className="ml-2 size-4" />
               </Button>

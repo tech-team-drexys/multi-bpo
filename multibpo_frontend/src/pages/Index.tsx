@@ -1,29 +1,29 @@
 import Header from "@/components/Header";
 import NewHero from "@/components/NewHero";
-import RevealSection from "@/components/RevealSection";
+import SecondHero from "@/components/SecondHero";
 import CTABanners from "@/components/CTABanners";
 import Services from "@/components/Services";
-import WhatsAppAssistant from "@/components/WhatsAppAssistant";
-import HowItWorks from "@/components/HowItWorks";
-import LightFooter from "@/components/LightFooter";
+import LightFooter from "@/components/Footer";
 import Courses from "@/components/Courses";
-import QuemSomos from "@/components/QuemSomos";
 import Blog from "@/components/Blog";
-import BentoSection from "@/components/BentoSection";
-import ExampleUseCases from "@/components/ExampleUseCases";
+import ConsultoriaIA from "@/components/ConsultoriaIA";
 import "@/components/ui/showcase-product.css";
+import WhatsAppAssistant from "@/components/WhatsAppAssistant";
+import CTASection from "@/components/CTASection";
+import { useSmoothScroll } from "@/hooks/useSmoothScroll";
 
 const Index = () => {
+  useSmoothScroll();
   return (
     <div className="min-h-screen bg-white w-full overflow-x-hidden">
       <Header enableScrollAnimation={true} />
       <NewHero />
-      <RevealSection />
+      <SecondHero />
       <CTABanners />
-      <ExampleUseCases />
-      <BentoSection />
+      <ConsultoriaIA />
+      <WhatsAppAssistant />
+      <CTASection />
       <Services />
-      <QuemSomos />
       <Blog />
       <Courses />
       <LightFooter />

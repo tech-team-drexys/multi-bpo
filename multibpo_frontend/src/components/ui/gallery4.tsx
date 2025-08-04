@@ -254,7 +254,7 @@ const CategoryCarousel = ({ title, items }: CategoryCarouselProps) => {
   const totalDots = Math.min(items.length, 15);
   const activeDotIndex = Math.round(scrollProgress * (totalDots - 1));
   return (
-    <div className="mb-16 last:mb-0">
+    <div className="mb-20 last:mb-0">
       <div className="container mx-auto mb-8">
         <h3 className={`${typography.heading.md} text-gray-900 mb-4`}>
           {title}
@@ -362,10 +362,10 @@ const CategorizedGallery = ({
 }: Gallery4Props) => {
   const categorizedServices = categorizeServices(items);
   return (
-    <section className={`pb-32 pt-20 bg-white`}>
+    <section className={`pb-32 pt-44 bg-white`}>
       <div className="container mx-auto">
-        <div className={`${spacing.content.md} text-center`}>
-          <h2 className={`${typography.heading.lg} text-gray-900 mb-4`}>
+        <div className={`${spacing.content.md} text-center `}>
+          <h2 className={`${typography.heading.lg} text-gray-900 mb-6`}>
             Nossos <span className="text-blue-600">Serviços</span>
           </h2>
           <p
@@ -431,7 +431,7 @@ const Gallery4 = ({
   return (
     <section className="bg-slate-100 pb-32 pt-20">
       <div className="container mx-auto">
-        <div className="mb-8 flex items-end justify-between md:mb-14 lg:mb-16">
+        <div className="mb-8 flex items-end justify-between md:mb-14 lg:mb-20">
           <div className="flex flex-col gap-4">
             <h2 className={`${typography.heading.lg} text-gray-900 mb-4`}>
               Nossos <span className="text-blue-600">Serviços</span>

@@ -5,9 +5,11 @@ interface UseScrollRevealOptions {
   rootMargin?: string;
 }
 
-export const useScrollReveal = (options: UseScrollRevealOptions = {}) => {
+export const useScrollReveal = <T extends HTMLElement = HTMLElement>(
+  options: UseScrollRevealOptions = {}
+) => {
   const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<T>(null);
 
   const { threshold = 0.2, rootMargin = "-50px" } = options;
 

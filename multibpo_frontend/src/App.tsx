@@ -4,56 +4,51 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfUse from "./pages/TermsOfUse";
+import PoliticaDePrivacidade from "./pages/PoliticaDePrivacidade";
+import TermosDeUso from "./pages/TermosDeUso";
 import NotFound from "./pages/NotFound";
-import ScrollToTop from "./components/ScrollToTop";
-import Claude from "./pages/Claude";
-
-// 📱 PÁGINAS MOBILE - MULTIBPO WHATSAPP INTEGRATION
-import CadastroMobile from "./pages/mobile/CadastroMobile";
-import VerificarEmail from "./pages/mobile/VerificarEmail";
-import EmailValidado from "./pages/mobile/EmailValidado";
 import LoginMobile from "./pages/mobile/LoginMobile";
-import PoliticaMobile from "./pages/mobile/PoliticaMobile";
-
-// ===== NOVAS PÁGINAS ASAAS PREMIUM =====
-import PremiumMobile from "./pages/mobile/PremiumMobile";
-import PremiumSuccess from "./pages/mobile/PremiumSuccess";
+import ScrollToTop from "./components/ScrollToTop";
+import FloatingWhatsAppButton from "./components/FloatingWhatsAppButton";
+import Politica from "./pages/Politica";
+import CadastroMobile from "./pages/mobile/CadastroMobile";
+import CheckoutMobile from "./pages/mobile/CheckoutMobile";
+import VerificarEmail from "./pages/mobile/VerificarEmail";
+import CadastroValidado from "./pages/mobile/CadastroValidado";
+import AppMVP from "./pages/AppMVP";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-use" element={<TermsOfUse />} />
-          <Route path="/claude" element={<Claude />} />
-          
-          {/* 📱 ROTAS MOBILE - MULTIBPO WHATSAPP INTEGRATION */}
-          <Route path="/m/cadastro" element={<CadastroMobile />} />
-          <Route path="/m/verificar-email" element={<VerificarEmail />} />
-          <Route path="/m/verificar-email/:token" element={<EmailValidado />} />
-          <Route path="/m/sucesso" element={<EmailValidado />} />
-          <Route path="/m/login" element={<LoginMobile />} />
-          <Route path="/m/politica" element={<PoliticaMobile />} />
-          
-          {/* ===== ROTAS ASAAS PREMIUM ===== */}
-          <Route path="/m/premium" element={<PremiumMobile />} />
-          <Route path="/m/premium/sucesso" element={<PremiumSuccess />} />
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route
+              path="/politica-de-privacidade"
+              element={<PoliticaDePrivacidade />}
+            />
+            <Route path="/termos-de-uso" element={<TermosDeUso />} />
+            <Route path="/login-mobile" element={<LoginMobile />} />
+            <Route path="/cadastro-mobile" element={<CadastroMobile />} />
+            <Route path="/checkout-mobile" element={<CheckoutMobile />} />
+            <Route path="/verificar-email" element={<VerificarEmail />} />
+            <Route path="/cadastro-validado" element={<CadastroValidado />} />
+            <Route path="/politica" element={<Politica />} />
+            <Route path="/app-mvp" element={<AppMVP />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <FloatingWhatsAppButton />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

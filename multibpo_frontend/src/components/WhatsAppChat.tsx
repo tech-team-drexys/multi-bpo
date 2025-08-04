@@ -7,87 +7,91 @@ interface Message {
 }
 interface WhatsAppChatProps {
   activeCategory: string;
+  isVisible?: boolean;
 }
-const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ activeCategory }) => {
+const WhatsAppChat: React.FC<WhatsAppChatProps> = ({
+  activeCategory,
+  isVisible = false,
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [messageIndex, setMessageIndex] = useState(0);
   const chatScenarios = {
-    vendas: [
+    tributacao: [
       {
-        text: "Olá! Gostaria de saber mais sobre os serviços contábeis",
+        text: "Tenho dúvidas sobre qual regime tributário escolher para minha empresa",
         sender: "user" as const,
       },
       {
-        text: "Olá! 😊 Seria um prazer ajudá-lo! Oferecemos consultoria contábil completa. Qual é o porte da sua empresa?",
+        text: "Olá! 📊 Posso te ajudar com isso! Para recomendar o melhor regime tributário, preciso saber:\n\n• Qual o faturamento anual da empresa?\n• Qual o tipo de atividade?\n• Quantos funcionários?",
         sender: "bot" as const,
       },
       {
-        text: "Somos uma empresa de médio porte, cerca de 50 funcionários",
+        text: "Faturamento de R$ 2 milhões anuais, somos uma consultoria em TI com 15 funcionários",
         sender: "user" as const,
       },
       {
-        text: "Perfeito! Para empresas do seu porte, temos pacotes especiais que incluem:\n\n📊 Contabilidade completa\n💰 Planejamento tributário\n📈 Relatórios gerenciais\n\nGostaria de agendar uma apresentação?",
+        text: "Perfeito! 💡 Com esse perfil, você tem 3 opções:\n\n📈 Lucro Presumido (11,33%)\n📊 Lucro Real (varia conforme lucro)\n🎯 Simples Nacional (não elegível)\n\nPara consultoria TI, geralmente o Lucro Presumido é mais vantajoso. Quer uma simulação detalhada?",
         sender: "bot" as const,
       },
       {
-        text: "Sim, tenho interesse!",
+        text: "Sim, gostaria da simulação!",
         sender: "user" as const,
       },
       {
-        text: "Excelente! 🎉 Vou transferir você para nosso especialista em vendas. Qual o melhor horário para contato?",
-        sender: "bot" as const,
-      },
-    ],
-    atendimento: [
-      {
-        text: "Preciso de ajuda com uma dúvida sobre minha declaração",
-        sender: "user" as const,
-      },
-      {
-        text: "Olá! Claro, estou aqui para ajudar! 📋 Pode me dar mais detalhes sobre sua dúvida?",
-        sender: "bot" as const,
-      },
-      {
-        text: "Não entendi uma informação no relatório mensal",
-        sender: "user" as const,
-      },
-      {
-        text: "Sem problemas! Posso explicar qualquer item do relatório. 📊\n\nVocê poderia me informar:\n• Qual seção específica?\n• Número do relatório?\n\nAssim posso te dar uma explicação detalhada!",
-        sender: "bot" as const,
-      },
-      {
-        text: "É sobre os impostos retidos na seção 3.2",
-        sender: "user" as const,
-      },
-      {
-        text: "Perfeito! 💡 Os impostos retidos na seção 3.2 referem-se aos valores que foram descontados na fonte. Vou enviar um documento explicativo e agendar uma reunião para esclarecer melhor. Pode ser amanhã às 14h?",
+        text: "Ótimo! 🚀 Vou preparar uma simulação completa comparando os regimes. Nosso especialista entrará em contato em 30 minutos com os cálculos personalizados. Pode ser?",
         sender: "bot" as const,
       },
     ],
-    promocoes: [
+    questoesTrabalhistas: [
       {
-        text: "Oi",
+        text: "Preciso calcular a rescisão de um funcionário que pediu demissão",
         sender: "user" as const,
       },
       {
-        text: "Olá! 🎉 Temos uma promoção especial este mês!\n\n🔥 50% OFF na primeira mensalidade\n📅 Consultoria gratuita\n🎁 Setup inicial sem custo\n\nVálido até o final do mês! Interessado?",
+        text: "Olá! 👨‍💼 Vou te ajudar com o cálculo da rescisão! Quando o funcionário pede demissão, ele tem direito a:\n\n• Saldo de salário\n• Férias vencidas + 1/3\n• 13º proporcional\n\n Pode passar as informações para eu calcular?",
         sender: "bot" as const,
       },
       {
-        text: "Que tipos de serviços estão inclusos?",
+        text: "Salário R$ 3.500, trabalhou 8 meses em 2024, tem 15 dias de férias vencidas",
         sender: "user" as const,
       },
       {
-        text: "Ótima pergunta! A promoção inclui:\n\n✅ Contabilidade digital completa\n✅ Emissão de guias e relatórios\n✅ Suporte via WhatsApp\n✅ Portal do cliente 24/7\n✅ Backup automático na nuvem\n\nTudo isso com 50% de desconto! 💰",
+        text: "Perfeito! 📝 Calculando:\n\n💰 13º proporcional: R$ 2.333,33\n🏖️ Férias vencidas + 1/3: R$ 1.166,67\n📅 Saldo salário: conforme dias trabalhados\n\n⚠️ Lembre-se: não há direito ao FGTS e multa de 40% em pedido de demissão.",
         sender: "bot" as const,
       },
       {
-        text: "Sounds good! Como faço para contratar?",
+        text: "E se ele tivesse sido demitido sem justa causa?",
         sender: "user" as const,
       },
       {
-        text: "Maravilha! 🚀 É super simples:\n\n1️⃣ Cadastro online (2 min)\n2️⃣ Envio de documentos\n3️⃣ Setup da sua conta\n4️⃣ Começamos a trabalhar!\n\nVou te enviar o link para começar agora mesmo! 📲",
+        text: "Na demissão sem justa causa, além dos valores anteriores, teria direito a:\n\n🏦 Saque do FGTS\n💰 Multa de 40% do FGTS\n📋 Seguro-desemprego\n🚨 Aviso prévio (30 dias)\n\nUma diferença significativa! Precisa de um relatório completo?",
+        sender: "bot" as const,
+      },
+    ],
+    procedimentosSocietarios: [
+      {
+        text: "Preciso fazer alteração do quadro societário da minha empresa",
+        sender: "user" as const,
+      },
+      {
+        text: "Olá! 🏢 Posso te orientar sobre alteração societária! Existem diferentes tipos:\n\n👥 Entrada de novo sócio\n🔄 Cessão de quotas\n📉 Retirada de sócio\n💰 Aumento de capital\n\nQual é o seu caso específico?",
+        sender: "bot" as const,
+      },
+      {
+        text: "Quero incluir minha esposa como sócia com 30% da empresa",
+        sender: "user" as const,
+      },
+      {
+        text: "Perfeito! 📋 Para incluir sua esposa como sócia, precisamos:\n\n📄 Alteração contratual\n🏛️ Registro na Junta Comercial\n📊 Definir como será a integralização\n💰 Verificar aspectos tributários\n\nO processo leva cerca de 15-20 dias úteis.",
+        sender: "bot" as const,
+      },
+      {
+        text: "Quais documentos preciso providenciar?",
+        sender: "user" as const,
+      },
+      {
+        text: "📑 Lista de documentos necessários:\n\n✅ Contrato social atual\n✅ RG e CPF dos sócios\n✅ Comprovante de endereço\n✅ Certidões negativas\n✅ Balanço patrimonial\n\nVou enviar um checklist completo e agendar uma reunião para iniciarmos! 🚀",
         sender: "bot" as const,
       },
     ],
@@ -98,6 +102,8 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ activeCategory }) => {
     setIsTyping(false);
   }, [activeCategory]);
   useEffect(() => {
+    if (!isVisible) return;
+
     const currentScenario =
       chatScenarios[activeCategory as keyof typeof chatScenarios];
     if (!currentScenario || messageIndex >= currentScenario.length) return;
@@ -128,26 +134,30 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ activeCategory }) => {
     }, typingDelay);
 
     return () => clearTimeout(timer);
-  }, [activeCategory, messageIndex]);
+  }, [activeCategory, messageIndex, isVisible]);
   return (
     <div className="relative">
       {/* Mockup do Celular */}
-      <div className="w-80 h-[600px] bg-black rounded-[3rem] p-2 shadow-2xl">
-        <div className="w-full h-full bg-white rounded-[2.5rem] overflow-hidden flex flex-col">
+      <div className="w-80 h-[590px] bg-gray-900 rounded-[3rem] p-2.5 shadow-2xl">
+        <div className="w-full h-full rounded-[2.5rem] overflow-hidden flex flex-col">
           {/* Header do WhatsApp */}
-          <div className="text-white p-4 flex items-center gap-3 bg-emerald-700">
-            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-              <span className="text-lg">🤖</span>
+          <div className="text-gray-900 p-4 flex items-center gap-3 bg-[#f6f6f6]">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <img
+                src="/logo-multi-bpo.png"
+                alt="logo"
+                className="w-10 h-10 object-contain"
+              />
             </div>
             <div>
-              <h3 className="font-semibold text-sm">MULTIBPO Assistant</h3>
-              <p className="text-xs opacity-90">Online agora</p>
+              <h3 className="font-semibold text-md">Luca IA</h3>
+              <p className="text-xs opacity-90">Consultor Contábil</p>
             </div>
           </div>
 
           {/* Área de Mensagens */}
           <div
-            className="flex-1 p-4 overflow-y-auto bg-gray-50 scrollbar-custom"
+            className="flex-1 p-4 overflow-y-auto bg-[#f0e7de] scrollbar-custom"
             style={{
               backgroundImage:
                 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23f0f0f0" fill-opacity="0.1"%3E%3Cpath d="m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
@@ -164,20 +174,14 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ activeCategory }) => {
                   <div
                     className={`max-w-xs px-4 py-2 rounded-lg shadow-sm animate-fade-in ${
                       message.sender === "user"
-                        ? "bg-emerald-700 text-white rounded-br-none"
-                        : "bg-white text-gray-800 rounded-bl-none border"
+                        ? "bg-[#e2ffc7] text-gray-900 rounded-br-none border"
+                        : "bg-white text-gray-800 rounded-bl-none"
                     }`}
                   >
                     <p className="text-sm whitespace-pre-line">
                       {message.text}
                     </p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        message.sender === "user"
-                          ? "text-green-100"
-                          : "text-gray-500"
-                      }`}
-                    >
+                    <p className={`text-xs mt-1 text-gray-500`}>
                       {message.timestamp}
                     </p>
                   </div>
@@ -187,17 +191,17 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ activeCategory }) => {
               {/* Indicador de digitação */}
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-white text-gray-800 px-4 py-2 rounded-lg rounded-bl-none border shadow-sm">
+                  <div className="bg-[#f6f6f6] text-gray-800 px-4 py-2 rounded-lg rounded-bl-none border shadow-sm">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
                       <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
                         style={{
                           animationDelay: "0.1s",
                         }}
                       ></div>
                       <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"
                         style={{
                           animationDelay: "0.2s",
                         }}

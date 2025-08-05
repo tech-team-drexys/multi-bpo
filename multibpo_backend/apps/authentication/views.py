@@ -1,6 +1,6 @@
 # Alteração teste - Comentário inserido para validar atualização do código no servidor - 05/08/2025
 # Alteração teste - novo comentario
-
+# Adicionando mais comentários
 
 """
 Views de Autenticação - Novo Fluxo BPO + Compatibilidade Total

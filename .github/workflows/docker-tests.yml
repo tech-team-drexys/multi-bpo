@@ -109,12 +109,12 @@ jobs:
 
     - name: 🏗️ Build and start containers
       run: |
-        docker-compose -f docker-compose.ci.yml up -d --build
+        docker compose -f docker-compose.ci.yml up -d --build
 
     - name: ⏳ Wait for containers
       run: |
         sleep 10
-        docker-compose -f docker-compose.ci.yml ps
+        docker compose -f docker-compose.ci.yml ps
 
     - name: 🗄️ Run migrations
       run: |
@@ -127,4 +127,4 @@ jobs:
     - name: 🧹 Cleanup
       if: always()
       run: |
-        docker-compose -f docker-compose.ci.yml down --volumes
+        docker compose -f docker-compose.ci.yml down --volumes

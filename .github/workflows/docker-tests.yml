@@ -116,6 +116,14 @@ jobs:
         sleep 10
         docker compose -f docker-compose.ci.yml ps
 
+    - name: 📁 Create logs directory
+      run: |
+        docker exec multibpo_backend_ci_${{ github.run_id }} mkdir -p /app/logs
+
+    - name: 🗄️ Run migrations
+      run: |
+        docker exec multibpo_backend_ci_${{ github.run_id }} python manage.py migrate --noinput
+
     - name: 🗄️ Run migrations
       run: |
         docker exec multibpo_backend_ci_${{ github.run_id }} python manage.py migrate --noinput

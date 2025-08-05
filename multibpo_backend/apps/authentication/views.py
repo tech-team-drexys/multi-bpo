@@ -1,3 +1,7 @@
+# Alteração teste - Comentário inserido para validar atualização do código no servidor - 05/08/2025
+# Alteração teste - novo comentario
+
+
 """
 Views de Autenticação - Novo Fluxo BPO + Compatibilidade Total
 MultiBPO Sub-Fase 2.2.3 - Views Adaptadas

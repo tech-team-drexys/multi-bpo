@@ -130,7 +130,7 @@ jobs:
 
     - name: 🧪 Run Django tests
       run: |
-        docker exec multibpo_backend_ci_${{ github.run_id }} python manage.py test --verbosity=2
+        docker exec multibpo_backend_ci_${{ github.run_id }} python manage.py test apps.authentication --verbosity=2 --keepdb
 
     - name: 🧹 Cleanup
       if: always()

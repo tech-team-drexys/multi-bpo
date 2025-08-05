@@ -1,0 +1,130 @@
+name: CI - Docker Tests
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/**
+      - release/**
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Secrets do GitHub
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+      METRICS_SECRET_KEY: ${{ secrets.METRICS_SECRET_KEY }}
+      ASAAS_API_KEY: ${{ secrets.ASAAS_API_KEY }}
+      ASAAS_WEBHOOK_TOKEN: ${{ secrets.ASAAS_WEBHOOK_TOKEN }}
+      
+      # Variáveis para CI
+      DATABASE_USER: multibpo_ci
+      DATABASE_NAME: multibpo_ci_db
+      CI: true
+
+    steps:
+    - name: 📂 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🔧 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: 📝 Create CI environment file
+      run: |
+        cat > .env.ci << 'EOF'
+        DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+        DJANGO_DEBUG=False
+        DJANGO_SECURE_SSL_REDIRECT=False
+        DJANGO_SESSION_COOKIE_SECURE=False
+        DJANGO_CSRF_COOKIE_SECURE=False
+        DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,backend_ci,testserver
+        
+        DATABASE_ENGINE=django.db.backends.postgresql
+        DATABASE_NAME=multibpo_ci_db
+        DATABASE_USER=multibpo_ci
+        DATABASE_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+        DATABASE_HOST=db_ci
+        DATABASE_PORT=5432
+        
+        POSTGRES_DB=multibpo_ci_db
+        POSTGRES_USER=multibpo_ci  
+        POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+        
+        EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+        DEFAULT_FROM_EMAIL=MultiBPO CI <ci@multibpo.com.br>
+        
+        ENABLE_METRICS=False
+        HEALTH_CHECK_EMAIL=False
+        HEALTH_CHECK_DATABASE=True
+        BACKUP_ENABLED=False
+        
+        ASAAS_API_KEY=${{ secrets.ASAAS_API_KEY }}
+        ASAAS_WEBHOOK_TOKEN=${{ secrets.ASAAS_WEBHOOK_TOKEN }}
+        EOF
+
+    - name: 📝 Create CI docker-compose
+      run: |
+        cat > docker-compose.ci.yml << 'EOF'
+        version: "3.9"
+        services:
+          db_ci:
+            image: postgres:15
+            container_name: multibpo_db_ci_${{ github.run_id }}
+            environment:
+              POSTGRES_DB: multibpo_ci_db
+              POSTGRES_USER: multibpo_ci
+              POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+            healthcheck:
+              test: ["CMD-SHELL", "pg_isready -d multibpo_ci_db -U multibpo_ci"]
+              interval: 10s
+              timeout: 5s
+              retries: 5
+            networks:
+              - ci_network
+
+          backend_ci:
+            build: ./multibpo_backend
+            container_name: multibpo_backend_ci_${{ github.run_id }}
+            env_file: .env.ci
+            depends_on:
+              db_ci:
+                condition: service_healthy
+            networks:
+              - ci_network
+            command: ["tail", "-f", "/dev/null"]
+
+        networks:
+          ci_network:
+        EOF
+
+    - name: 🏗️ Build and start containers
+      run: |
+        docker-compose -f docker-compose.ci.yml up -d --build
+
+    - name: ⏳ Wait for containers
+      run: |
+        sleep 10
+        docker-compose -f docker-compose.ci.yml ps
+
+    - name: 🗄️ Run migrations
+      run: |
+        docker exec multibpo_backend_ci_${{ github.run_id }} python manage.py migrate --noinput
+
+    - name: 🧪 Run Django tests
+      run: |
+        docker exec multibpo_backend_ci_${{ github.run_id }} python manage.py test --verbosity=2
+
+    - name: 🧹 Cleanup
+      if: always()
+      run: |
+        docker-compose -f docker-compose.ci.yml down --volumes

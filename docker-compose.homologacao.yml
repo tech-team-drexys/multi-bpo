@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  # Backend Django
+  backend:
+    build: ./multibpo_backend
+    container_name: multibpo_backend_homolog
+    volumes:
+      - ./multibpo_backend:/app
+      - multibpo_static_volume_homolog:/app/staticfiles
+      - multibpo_logs_homolog:/app/logs
+      - multibpo_email_logs_homolog:/app/logs/email
+      - multibpo_metrics_homolog:/app/metrics
+      - multibpo_backups_homolog:/app/backups
+    env_file:
+      - .env.homolog
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - multibpo_network_homolog
+    restart: unless-stopped
+
+  # Frontend React
+  frontend:
+    build: 
+      context: ./multibpo_frontend
+      dockerfile: Dockerfile
+    container_name: multibpo_frontend_homolog
+    ports:
+      - "127.0.0.1:6011:3000"
+    volumes:
+      - ./multibpo_frontend:/app
+      - /app/node_modules
+      - /app/dist
+    environment:
+      - VITE_API_URL=http://192.168.1.4:6090
+      - VITE_NODE_ENV=staging
+    networks:
+      - multibpo_network_homolog
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: multibpo_db_homolog
+    ports:
+      - "127.0.0.1:6012:5432"
+    env_file:
+      - .env.homolog
+    volumes:
+      - multibpo_db_volume_homolog:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - multibpo_network_homolog
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U multibpo_homolog -d multibpo_homolog_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Proxy
+  nginx:
+    image: nginx:latest
+    container_name: multibpo_nginx_homolog
+    ports:
+      - "0.0.0.0:6090:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.homolog.conf:/etc/nginx/nginx.conf
+      - multibpo_static_volume_homolog:/var/www/static
+      - multibpo_nginx_logs_homolog:/var/log/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - multibpo_network_homolog
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  multibpo_db_volume_homolog:
+    driver: local
+  multibpo_static_volume_homolog:
+    driver: local
+  multibpo_nginx_logs_homolog:
+    driver: local
+  multibpo_logs_homolog:
+    driver: local
+  multibpo_email_logs_homolog:
+    driver: local
+  multibpo_metrics_homolog:
+    driver: local
+  multibpo_backups_homolog:
+    driver: local
+
+networks:
+  multibpo_network_homolog:
+    driver: bridge

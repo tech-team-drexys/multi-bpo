@@ -1,0 +1,105 @@
+version: "3.9"
+
+services:
+  # Backend Django
+  backend:
+    build: ./multibpo_backend
+    container_name: multibpo_backend_testes
+    volumes:
+      - ./multibpo_backend:/app
+      - multibpo_static_volume_testes:/app/staticfiles
+      - multibpo_logs_testes:/app/logs
+      - multibpo_email_logs_testes:/app/logs/email
+      - multibpo_metrics_testes:/app/metrics
+      - multibpo_backups_testes:/app/backups
+    env_file:
+      - .env.testes
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - multibpo_network_testes
+    restart: unless-stopped
+
+  # Frontend React
+  frontend:
+    build: 
+      context: ./multibpo_frontend
+      dockerfile: Dockerfile
+    container_name: multibpo_frontend_testes
+    ports:
+      - "127.0.0.1:5013:3000"
+    volumes:
+      - ./multibpo_frontend:/app
+      - /app/node_modules
+      - /app/dist
+    environment:
+      - VITE_API_URL=http://192.168.1.4:5090
+      - VITE_NODE_ENV=testing
+    networks:
+      - multibpo_network_testes
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    container_name: multibpo_db_testes
+    ports:
+      - "127.0.0.1:5012:5432"
+    env_file:
+      - .env.testes
+    volumes:
+      - multibpo_db_volume_testes:/var/lib/postgresql/data
+      - ./infrastructure/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - multibpo_network_testes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U multibpo_testes -d multibpo_testes_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Proxy
+  nginx:
+    image: nginx:latest
+    container_name: multibpo_nginx_testes
+    ports:
+      - "0.0.0.0:5090:80"
+    volumes:
+      - ./infrastructure/nginx/nginx.testes.conf:/etc/nginx/nginx.conf
+      - multibpo_static_volume_testes:/var/www/static
+      - multibpo_nginx_logs_testes:/var/log/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - multibpo_network_testes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  multibpo_db_volume_testes:
+    driver: local
+  multibpo_static_volume_testes:
+    driver: local
+  multibpo_nginx_logs_testes:
+    driver: local
+  multibpo_logs_testes:
+    driver: local
+  multibpo_email_logs_testes:
+    driver: local
+  multibpo_metrics_testes:
+    driver: local
+  multibpo_backups_testes:
+    driver: local
+
+networks:
+  multibpo_network_testes:
+    driver: bridge
